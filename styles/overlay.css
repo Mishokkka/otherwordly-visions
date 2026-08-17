@@ -1,0 +1,15 @@
+#ov-flash-layer { position: fixed; inset: 0; z-index: 100000; overflow: hidden; pointer-events: none; display: grid; place-items: center; }
+#ov-flash-layer .ov-flash-frame { --ov-duration: 350ms; --ov-fade: 90ms; --ov-opacity: .5; --ov-scale: 1; --ov-rotation: 0deg; --ov-blur: 0px; --ov-edge: 12%; position: absolute; inset: 0; margin: 0; opacity: 0; display: grid; place-items: center; transition: opacity var(--ov-fade) linear; mix-blend-mode: screen; }
+#ov-flash-layer .ov-flash-frame[data-blend="normal"] { mix-blend-mode: normal; }
+#ov-flash-layer .ov-flash-frame[data-blend="lighten"] { mix-blend-mode: lighten; }
+#ov-flash-layer .ov-flash-frame[data-blend="overlay"] { mix-blend-mode: overlay; }
+#ov-flash-layer .ov-flash-frame[data-blend="soft-light"] { mix-blend-mode: soft-light; }
+#ov-flash-layer .ov-flash-frame[data-blend="difference"] { mix-blend-mode: difference; }
+#ov-flash-layer .ov-flash-frame.is-visible { opacity: var(--ov-opacity); }
+#ov-flash-layer .ov-flash-image { width: 100%; height: 100%; object-fit: contain; transform: scale(var(--ov-scale)) rotate(var(--ov-rotation)); filter: blur(var(--ov-blur)); }
+#ov-flash-layer .ov-flash-frame[data-fit="cover"] .ov-flash-image { object-fit: cover; }
+#ov-flash-layer .ov-flash-frame.has-edge-fade .ov-flash-image { -webkit-mask-image: radial-gradient(ellipse at center, black calc(100% - var(--ov-edge) * 2), transparent 100%); mask-image: radial-gradient(ellipse at center, black calc(100% - var(--ov-edge) * 2), transparent 100%); }
+#ov-flash-layer .ov-flash-frame.has-vignette::after { content: ""; position: absolute; inset: 0; background: radial-gradient(ellipse at center, transparent 35%, rgba(0,0,0,.8) 100%); }
+#ov-flash-layer figcaption { position: absolute; z-index: 2; left: 50%; bottom: 8%; max-width: min(800px,80vw); transform: translateX(-50%); padding: 8px 14px; color: white; background: rgba(0,0,0,.68); border-radius: 7px; font: 600 1.05rem/1.3 sans-serif; text-align: center; text-shadow: 0 1px 3px black; }
+#ov-flash-layer .ov-transition-pulse.is-visible { animation: ov-pulse var(--ov-duration) ease-in-out; }
+@keyframes ov-pulse { 0%,100% { opacity: 0; } 18%,70% { opacity: var(--ov-opacity); } 40% { opacity: calc(var(--ov-opacity) * .6); } }

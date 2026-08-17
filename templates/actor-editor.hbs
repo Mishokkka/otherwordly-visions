@@ -1,0 +1,97 @@
+<div class="ov-editor-part ov-actor-layout">
+  <header class="ov-actor-topbar">
+    <div class="ov-actor-identity">
+      <img src="{{actor.img}}" alt="">
+      <div>
+        <strong>{{actor.name}}</strong>
+        <small>{{localize "OV.ActorEditor.Help"}}</small>
+      </div>
+    </div>
+    <span class="ov-status {{#if touched.enabled}}is-ok{{else}}is-danger{{/if}}">
+      <i class="fa-solid {{#if touched.enabled}}fa-eye{{else}}fa-eye-slash{{/if}}"></i>
+      {{#if touched.enabled}}{{localize "OV.Common.Enabled"}}{{else}}{{localize "OV.Common.Disabled"}}{{/if}}
+    </span>
+  </header>
+
+  <main class="ov-actor-workspace" data-scroll-key="actor-editor">
+    <section class="ov-kpi-grid ov-actor-kpis">
+      <article><span>{{localize "OV.ActorEditor.Visible"}}</span><strong>{{stats.visible}}</strong></article>
+      <article><span>{{localize "OV.ActorEditor.Eligible"}}</span><strong>{{stats.eligible}}</strong></article>
+      <article><span>{{localize "OV.ActorEditor.SceneTokens"}}</span><strong>{{stats.total}}</strong></article>
+    </section>
+
+    <section class="ov-card ov-actor-card">
+      <header>
+        <div>
+          <h3>{{localize "OV.ActorEditor.Status"}}</h3>
+          <p>{{localize "OV.ActorEditor.Help"}}</p>
+        </div>
+        <label class="ov-touched-toggle">
+          <input type="checkbox" name="enabled" {{#if touched.enabled}}checked{{/if}}>
+          <span><i class="fa-solid fa-eye"></i> {{localize "OV.ActorEditor.Touched"}}</span>
+        </label>
+      </header>
+      <div class="ov-form-grid two">
+        <label>
+          <span>{{localize "OV.ActorEditor.Rank"}}</span>
+          <input type="number" name="rank" value="{{touched.rank}}" min="0" max="20" step="1">
+        </label>
+        <label>
+          <span>{{localize "OV.Common.Tags"}}</span>
+          <input type="text" name="tags" value="{{tagsText}}" placeholder="dream, blood, void">
+        </label>
+      </div>
+    </section>
+
+    <section class="ov-card ov-actor-card">
+      <header>
+        <div>
+          <h3>{{localize "OV.ActorEditor.Sets"}}</h3>
+          <p>{{localize "OV.ActorEditor.Help"}}</p>
+        </div>
+        <span class="ov-count">{{sets.length}}</span>
+      </header>
+      <div class="ov-actor-set-grid">
+        {{#each sets}}
+        <label class="ov-actor-set-card {{#if checked}}is-selected{{/if}} {{#unless enabled}}is-muted{{/unless}}">
+          <input type="checkbox" name="visionSetUuids" value="{{uuid}}" {{#if checked}}checked{{/if}}>
+          <span>
+            <strong>{{name}}</strong>
+            <small>{{#if enabled}}{{localize "OV.Common.Enabled"}}{{else}}{{localize "OV.Common.Disabled"}}{{/if}}</small>
+          </span>
+          <i class="fa-solid {{#if checked}}fa-circle-check{{else}}fa-circle{{/if}}"></i>
+        </label>
+        {{else}}
+        <p class="ov-empty">{{localize "OV.ActorEditor.NoSets"}}</p>
+        {{/each}}
+      </div>
+    </section>
+
+    <section class="ov-card ov-actor-card">
+      <header>
+        <div>
+          <h3>{{localize "OV.ActorEditor.Revelations"}}</h3>
+          <p>{{localize "OV.ActorEditor.RevelationsHelp"}}</p>
+        </div>
+      </header>
+      <div class="ov-revelation-list">
+        {{#each revelations}}
+        <div data-revelation-token="{{uuid}}">
+          <img src="{{img}}" alt="">
+          <strong>{{name}}</strong>
+          <select name="revelationStage">
+            {{#each stages}}<option value="{{value}}" {{#if selected}}selected{{/if}}>{{label}}</option>{{/each}}
+          </select>
+        </div>
+        {{else}}
+        <p class="ov-empty">{{localize "OV.ActorEditor.NoRevelations"}}</p>
+        {{/each}}
+      </div>
+    </section>
+  </main>
+
+  <footer class="form-footer ov-actor-footer">
+    <button type="button" data-action="test"><i class="fa-solid fa-play"></i> {{localize "OV.Common.Test"}}</button>
+    <button type="button" data-action="save" class="primary"><i class="fa-solid fa-floppy-disk"></i> {{localize "OV.Common.Save"}}</button>
+  </footer>
+</div>

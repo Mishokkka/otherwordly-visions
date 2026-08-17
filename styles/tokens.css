@@ -1,0 +1,3 @@
+.control-icon.ov-token-hud.active { color: #bcaeff; text-shadow: 0 0 8px rgba(156,136,255,.75); }
+#combat-tracker .ov-combatant-hidden, .combat-tracker .ov-combatant-hidden { display: none !important; }
+.otherworldly-visions .ov-preview-users button.active { border-color: var(--ov-accent); background: color-mix(in srgb, var(--ov-accent) 25%, transparent); }

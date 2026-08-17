@@ -1,0 +1,219 @@
+@import url("./manager.css");
+@import url("./editors.css");
+@import url("./tokens.css");
+@import url("./overlay.css");
+@import url("./accessibility.css");
+
+.application.otherworldly-visions,
+.otherworldly-visions {
+  --ov-bg: #0c1017;
+  --ov-bg-soft: #111722;
+  --ov-panel: #171d28;
+  --ov-panel-2: #202838;
+  --ov-panel-3: #293247;
+  --ov-border: #3b4660;
+  --ov-border-strong: #6658a8;
+  --ov-text: #edf2fb;
+  --ov-muted: #a7b0c2;
+  --ov-accent: #8d79df;
+  --ov-accent-hover: #a590f2;
+  --ov-danger: #db6677;
+  --ov-warning: #d8a951;
+  --ov-ok: #69c596;
+  --ov-radius: 9px;
+  color: var(--ov-text) !important;
+  color-scheme: dark;
+}
+
+.application.otherworldly-visions .window-content,
+.otherworldly-visions .window-content {
+  padding: 0 !important;
+  overflow: hidden !important;
+  background: var(--ov-bg) !important;
+  color: var(--ov-text) !important;
+}
+
+.application.otherworldly-visions h1,
+.application.otherworldly-visions h2,
+.application.otherworldly-visions h3,
+.application.otherworldly-visions h4,
+.application.otherworldly-visions p,
+.application.otherworldly-visions span,
+.application.otherworldly-visions strong,
+.application.otherworldly-visions small,
+.application.otherworldly-visions label,
+.application.otherworldly-visions dt,
+.application.otherworldly-visions dd,
+.application.otherworldly-visions summary,
+.otherworldly-visions h1,
+.otherworldly-visions h2,
+.otherworldly-visions h3,
+.otherworldly-visions h4 {
+  color: inherit;
+}
+
+.application.otherworldly-visions h1,
+.application.otherworldly-visions h2,
+.application.otherworldly-visions h3,
+.application.otherworldly-visions h4 {
+  border: 0 !important;
+  text-shadow: none !important;
+}
+
+.application.otherworldly-visions button,
+.otherworldly-visions button {
+  min-height: 30px;
+  margin: 0;
+  padding: 5px 10px;
+  border: 1px solid var(--ov-border) !important;
+  border-radius: 7px;
+  background: var(--ov-panel-2) !important;
+  color: var(--ov-text) !important;
+  box-shadow: none !important;
+  font: inherit;
+  line-height: 1.1;
+}
+
+.application.otherworldly-visions button:hover,
+.application.otherworldly-visions button:focus-visible,
+.otherworldly-visions button:hover,
+.otherworldly-visions button:focus-visible {
+  border-color: var(--ov-accent-hover) !important;
+  background: var(--ov-panel-3) !important;
+  outline: 1px solid rgba(165, 144, 242, .55);
+}
+
+.application.otherworldly-visions button.primary,
+.application.otherworldly-visions button.active,
+.otherworldly-visions button.primary,
+.otherworldly-visions button.active {
+  border-color: var(--ov-accent-hover) !important;
+  background: #55478f !important;
+}
+
+.application.otherworldly-visions button.danger,
+.otherworldly-visions button.danger,
+.otherworldly-visions .ov-chip.danger {
+  border-color: var(--ov-danger) !important;
+  color: #ffdfe4 !important;
+}
+
+.application.otherworldly-visions button.icon,
+.otherworldly-visions button.icon {
+  width: 32px;
+  min-width: 32px;
+  padding: 0;
+}
+
+.application.otherworldly-visions button:disabled,
+.otherworldly-visions button:disabled {
+  cursor: not-allowed;
+  opacity: .42;
+}
+
+.application.otherworldly-visions button[aria-busy="true"],
+.otherworldly-visions button[aria-busy="true"] {
+  cursor: progress;
+  opacity: .72;
+}
+
+.application.otherworldly-visions input:not([type="checkbox"]):not([type="radio"]),
+.application.otherworldly-visions select,
+.application.otherworldly-visions textarea,
+.otherworldly-visions input:not([type="checkbox"]):not([type="radio"]),
+.otherworldly-visions select,
+.otherworldly-visions textarea {
+  min-height: 30px;
+  border: 1px solid var(--ov-border) !important;
+  border-radius: 6px;
+  background: #0f1520 !important;
+  color: var(--ov-text) !important;
+  -webkit-text-fill-color: var(--ov-text) !important;
+  box-shadow: inset 0 1px 2px rgba(0, 0, 0, .45) !important;
+  padding: 5px 7px;
+}
+
+.application.otherworldly-visions select option,
+.application.otherworldly-visions select optgroup,
+.otherworldly-visions select option,
+.otherworldly-visions select optgroup {
+  background: #111722 !important;
+  color: #edf2fb !important;
+}
+
+.application.otherworldly-visions input::placeholder,
+.application.otherworldly-visions textarea::placeholder,
+.otherworldly-visions input::placeholder,
+.otherworldly-visions textarea::placeholder {
+  color: #778197 !important;
+  opacity: 1;
+}
+
+.application.otherworldly-visions textarea,
+.otherworldly-visions textarea {
+  min-height: 54px;
+  resize: vertical;
+}
+
+.application.otherworldly-visions input:focus,
+.application.otherworldly-visions select:focus,
+.application.otherworldly-visions textarea:focus,
+.otherworldly-visions input:focus,
+.otherworldly-visions select:focus,
+.otherworldly-visions textarea:focus {
+  border-color: var(--ov-accent-hover) !important;
+  outline: 1px solid rgba(165, 144, 242, .5) !important;
+}
+
+.application.otherworldly-visions input[type="checkbox"],
+.application.otherworldly-visions input[type="radio"],
+.otherworldly-visions input[type="checkbox"],
+.otherworldly-visions input[type="radio"] {
+  accent-color: var(--ov-accent);
+}
+
+.otherworldly-visions label > span { display: block; margin-bottom: 4px; color: var(--ov-muted) !important; font-size: .84em; }
+.otherworldly-visions .checkbox { display: flex; align-items: center; gap: 7px; }
+.otherworldly-visions .checkbox input { width: auto; }
+.otherworldly-visions .is-muted { opacity: .5; }
+.otherworldly-visions .ov-empty { color: var(--ov-muted) !important; font-style: italic; margin: 10px 0; }
+.otherworldly-visions .ov-muted-text { color: var(--ov-muted) !important; font-size: .78em; }
+.otherworldly-visions .ov-actions { display: flex; align-items: center; gap: 6px; }
+.otherworldly-visions .ov-actions.wrap { flex-wrap: wrap; }
+.otherworldly-visions .ov-chip-row { display: flex; flex-wrap: wrap; gap: 6px; }
+.otherworldly-visions .ov-chip { display: inline-flex; align-items: center; min-height: 24px; padding: 2px 7px; border: 1px solid var(--ov-border); border-radius: 999px; font-size: .78em; color: var(--ov-muted) !important; }
+.otherworldly-visions .ov-chip.warning { border-color: var(--ov-warning); color: #ffe2ad !important; }
+.otherworldly-visions .ov-status { padding: 3px 8px; border-radius: 999px; border: 1px solid var(--ov-border); font-size: .78em; }
+.otherworldly-visions .ov-status.is-ok { color: var(--ov-ok) !important; border-color: var(--ov-ok); }
+.otherworldly-visions .ov-status.is-danger { color: var(--ov-danger) !important; border-color: var(--ov-danger); }
+.otherworldly-visions code { color: #c9d4e7 !important; }
+
+.application.otherworldly-visions .window-header .ov-classic-close {
+  position: relative;
+  display: grid;
+  place-items: center;
+  width: 32px;
+  min-width: 32px;
+  height: 30px;
+  padding: 0 !important;
+  font-family: Arial, sans-serif !important;
+  font-style: normal !important;
+}
+.application.otherworldly-visions .window-header .ov-classic-close::before,
+.application.otherworldly-visions .window-header .ov-classic-close::after {
+  content: none !important;
+  display: none !important;
+}
+.application.otherworldly-visions .window-header .ov-classic-close .ov-close-glyph {
+  position: absolute;
+  inset: 0;
+  display: grid;
+  place-items: center;
+  margin: 0;
+  color: inherit !important;
+  font-family: Arial, sans-serif !important;
+  font-size: 24px;
+  font-weight: 400;
+  line-height: 1;
+  transform: translateY(-1px);
+}

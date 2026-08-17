@@ -1,0 +1,174 @@
+<div class="ov-shell">
+  <header class="ov-topbar">
+    <div class="ov-brand"><i class="fa-solid fa-eye"></i><div><strong>{{localize "OV.Manager.Title"}}</strong><small>v{{moduleVersion}}</small></div></div>
+    <nav class="ov-tabs">
+      {{#each tabs}}<button type="button" data-action="selectTab" data-tab="{{id}}" class="{{#if active}}active{{/if}}">{{label}}</button>{{/each}}
+    </nav>
+    <div class="ov-top-actions"><span class="ov-status {{#if globalFlash}}is-ok{{else}}is-danger{{/if}}">{{#if globalFlash}}{{localize "OV.Manager.FlashesOn"}}{{else}}{{localize "OV.Manager.FlashesOff"}}{{/if}}</span><button type="button" data-action="toggleGlobalFlash" class="icon" title="{{localize "OV.Manager.ToggleGlobal"}}"><i class="fa-solid fa-power-off"></i></button></div>
+  </header>
+
+  {{#if isDirector}}
+  <main class="ov-workspace ov-director-layout" data-scroll-key="director">
+    <section class="ov-main-column">
+      <div class="ov-kpi-grid">
+        <article><span>{{localize "OV.Stats.Sets"}}</span><strong>{{stats.sets}}</strong></article><article><span>{{localize "OV.Stats.Images"}}</span><strong>{{stats.images}}</strong></article><article><span>{{localize "OV.Stats.Audio"}}</span><strong>{{stats.audio}}</strong></article><article><span>{{localize "OV.Stats.Touched"}}</span><strong>{{stats.actors}}</strong></article><article><span>{{localize "OV.Stats.Tokens"}}</span><strong>{{stats.tokens}}</strong></article><article><span>{{localize "OV.Stats.Jobs"}}</span><strong>{{stats.jobs}}</strong></article>
+      </div>
+      <section class="ov-card ov-now-playing">
+        <header><h2>{{localize "OV.Director.Now"}}</h2><div class="ov-actions"><button type="button" data-action="repeatLast"><i class="fa-solid fa-rotate-right"></i> {{localize "OV.Director.Repeat"}}</button><button type="button" data-action="stopAll" class="danger"><i class="fa-solid fa-stop"></i> {{localize "OV.Director.StopAll"}}</button></div></header>
+        {{#if director.current}}<div class="ov-current-cue"><i class="fa-solid fa-wave-square"></i><div><strong>{{director.current.setName}}</strong><span>{{director.current.source}}</span></div><span class="ov-chip">P{{director.current.priority}}</span></div>{{else}}<p class="ov-empty">{{localize "OV.Director.Idle"}}</p>{{/if}}
+        {{#if director.queue.length}}<div class="ov-queue">{{#each director.queue}}<div><strong>{{setName}}</strong><span>{{source}}</span><span>P{{priority}}</span></div>{{/each}}</div>{{/if}}
+      </section>
+      <section class="ov-card">
+        <header><h2>{{localize "OV.Director.Cue"}}</h2></header>
+        <div class="ov-cue-grid">
+          {{#each sets}}<article class="ov-cue-card {{#unless enabled}}is-muted{{/unless}}"><div><strong>{{name}}</strong><span>{{images}} {{localize "OV.Common.Images"}} · {{audio}} {{localize "OV.Common.Audio"}}</span></div><div><button type="button" data-action="selectSet" data-set-uuid="{{uuid}}" data-open-editor="true" title="{{localize "OV.Common.Edit"}}"><i class="fa-solid fa-pen"></i></button></div></article>{{else}}<p class="ov-empty">{{localize "OV.Set.None"}}</p>{{/each}}
+        </div>
+        {{#if selectedSet}}
+        <div class="ov-director-console">
+          <strong>{{selectedSet.name}}</strong>
+          <div class="ov-director-options"><label>{{localize "OV.Director.Countdown"}} <input type="number" name="remoteCountdown" value="0" min="0" max="30" step="1"></label><label>{{localize "OV.Director.Conflict"}} <select name="remoteConflict"><option value="replace-lower">{{localize "OV.Director.ReplaceLower"}}</option><option value="queue">{{localize "OV.Director.Queue"}}</option><option value="drop">{{localize "OV.Director.Drop"}}</option><option value="replace">{{localize "OV.Director.Replace"}}</option></select></label></div><div class="ov-actions"><button type="button" data-action="testDraft"><i class="fa-solid fa-desktop"></i> {{localize "OV.Director.Local"}}</button><button type="button" data-action="cueRemote" class="primary"><i class="fa-solid fa-bolt"></i> {{localize "OV.Director.Send"}}</button></div>
+        </div>
+        {{/if}}
+      </section>
+      <section class="ov-card">
+        <header><h2>{{localize "OV.Director.ManualTriggers"}}</h2></header>
+        <div class="ov-chip-row"><button type="button" data-action="fireTrigger" data-trigger-type="sceneReady">sceneReady</button><button type="button" data-action="fireTrigger" data-trigger-type="combatStart">combatStart</button><button type="button" data-action="fireTrigger" data-trigger-type="fblPush">fblPush</button><button type="button" data-action="fireTrigger" data-trigger-type="fblBane">fblBane</button><button type="button" data-action="resetSession" class="danger">{{localize "OV.Director.ResetSession"}}</button></div>
+      </section>
+      <section class="ov-card">
+        <header><h2>{{localize "OV.Director.History"}}</h2></header>
+        <div class="ov-table-list">{{#each director.history}}<div><span>{{at}}</span><strong>{{cue.setName}}</strong><span>{{cue.source}}</span><span class="ov-chip">{{result.status}}</span></div>{{else}}<p class="ov-empty">{{localize "OV.Director.NoHistory"}}</p>{{/each}}</div>
+      </section>
+    </section>
+    <aside class="ov-side-column">
+      <section class="ov-card sticky"><header><h3>{{localize "OV.Common.Recipients"}}</h3><button type="button" data-action="syncSchedulers" class="icon" title="{{localize "OV.Director.Sync"}}"><i class="fa-solid fa-arrows-rotate"></i></button></header><div class="ov-recipient-list">{{#each users}}<label class="{{#unless active}}is-muted{{/unless}}"><input type="checkbox" name="recipientIds" value="{{id}}" {{#if checked}}checked{{/if}}><span><strong>{{name}}</strong><small>{{state}} · {{version}} · {{lastSeen}}</small></span><i class="fa-solid {{#if active}}fa-circle-check{{else}}fa-circle-xmark{{/if}}"></i></label>{{else}}<p class="ov-empty">{{localize "OV.Director.NoPlayers"}}</p>{{/each}}</div></section>
+      <section class="ov-card"><header><h3>{{localize "OV.Director.Scheduler"}}</h3></header><dl class="ov-dl"><dt>{{localize "OV.Common.Status"}}</dt><dd>{{#if scheduler.running}}{{localize "OV.Common.Running"}}{{else}}{{localize "OV.Common.Stopped"}}{{/if}}</dd><dt>{{localize "OV.Stats.Jobs"}}</dt><dd>{{stats.jobs}}</dd><dt>{{localize "OV.Director.Generation"}}</dt><dd>{{scheduler.generation}}</dd></dl></section>
+    </aside>
+  </main>
+  {{/if}}
+
+  {{#if isSets}}
+  <main class="ov-workspace ov-split-layout" data-scroll-key="sets-shell">
+    <aside class="ov-sidebar">
+      <div class="ov-sidebar-actions"><button type="button" data-action="addSet" class="primary"><i class="fa-solid fa-plus"></i> {{localize "OV.Set.Add"}}</button></div>
+      <div class="ov-sidebar-list" data-scroll-key="sets-sidebar">{{#each sets}}<button type="button" data-action="selectSet" data-set-uuid="{{uuid}}" class="ov-set-row {{#if selected}}active{{/if}} {{#unless enabled}}is-muted{{/unless}}"><span><strong>{{name}}</strong><small>{{images}} img · {{audio}} audio · {{triggers}} trg</small></span><i class="fa-solid fa-chevron-right"></i></button>{{else}}<p class="ov-empty">{{localize "OV.Set.None"}}</p>{{/each}}</div>
+    </aside>
+    <section class="ov-set-workbench" data-scroll-key="sets-editor-{{selectedSet.uuid}}">
+      {{#if selectedSet}}
+      <div class="ov-editor-toolbar"><div><h2>{{selectedSet.name}}</h2><span class="ov-chip">rev {{revision}}</span>{{#if dirty}}<span class="ov-chip warning">{{localize "OV.Common.Unsaved"}}</span>{{/if}}</div><div class="ov-actions"><button type="button" data-action="duplicateSet"><i class="fa-solid fa-copy"></i></button><button type="button" data-action="revertSet" {{#unless dirty}}disabled{{/unless}}><i class="fa-solid fa-rotate-left"></i> {{localize "OV.Common.Revert"}}</button><button type="button" data-action="deleteSet" class="danger"><i class="fa-solid fa-trash"></i></button><button type="button" data-action="saveSet" class="primary"><i class="fa-solid fa-floppy-disk"></i> {{localize "OV.Common.Save"}}</button></div></div>
+      <div class="ov-set-editor" data-set-editor>
+        <section class="ov-card">
+          <header><h3>{{localize "OV.Set.Identity"}}</h3><div class="ov-chip-row">{{#each setPresets}}<button type="button" data-action="applySetPreset" data-preset="{{id}}">{{label}}</button>{{/each}}</div></header>
+          <div class="ov-form-grid three"><label class="span-2"><span>{{localize "OV.Common.Name"}}</span><input name="name" value="{{selectedSet.name}}"></label><label><span>Slug</span><input name="slug" value="{{selectedSet.slug}}"></label><label class="checkbox"><input type="checkbox" name="setEnabled" {{#if selectedSet.enabled}}checked{{/if}}> {{localize "OV.Common.Enabled"}}</label><label class="span-2"><span>{{localize "OV.Set.SafetyTags"}}</span><input name="safety" value="{{selectedSet.safetyText}}"></label></div>
+        </section>
+        <section class="ov-card"><header><h3>{{localize "OV.Set.Schedule"}}</h3></header><div class="ov-form-grid four"><label><span>{{localize "OV.Set.MinDelay"}}</span><input type="number" name="minDelay" value="{{selectedSet.minDelay}}"></label><label><span>{{localize "OV.Set.MaxDelay"}}</span><input type="number" name="maxDelay" value="{{selectedSet.maxDelay}}"></label><label><span>{{localize "OV.Set.Chance"}}</span><input type="number" name="chance" value="{{selectedSet.chance}}" min="0" max="1" step="0.01"></label><label><span>{{localize "OV.Set.Cooldown"}}</span><input type="number" name="cooldown" value="{{selectedSet.cooldown}}"></label><label><span>{{localize "OV.Set.MaxSession"}}</span><input type="number" name="maxPerSession" value="{{selectedSet.maxPerSession}}"></label><label><span>{{localize "OV.Set.NoRepeat"}}</span><input type="number" name="noRepeatWindow" value="{{selectedSet.noRepeatWindow}}"></label></div></section>
+        <section class="ov-card"><header><h3>{{localize "OV.Set.Visuals"}}</h3></header><div class="ov-form-grid four"><label><span>{{localize "OV.Set.OpacityMin"}}</span><input type="number" name="minOpacity" value="{{selectedSet.minOpacity}}" step="0.01"></label><label><span>{{localize "OV.Set.OpacityMax"}}</span><input type="number" name="maxOpacity" value="{{selectedSet.maxOpacity}}" step="0.01"></label><label><span>{{localize "OV.Set.DurationMin"}}</span><input type="number" name="minDuration" value="{{selectedSet.minDuration}}"></label><label><span>{{localize "OV.Set.DurationMax"}}</span><input type="number" name="maxDuration" value="{{selectedSet.maxDuration}}"></label><label><span>{{localize "OV.Set.ScaleMin"}}</span><input type="number" name="minScale" value="{{selectedSet.minScale}}" step="0.01"></label><label><span>{{localize "OV.Set.ScaleMax"}}</span><input type="number" name="maxScale" value="{{selectedSet.maxScale}}" step="0.01"></label><label><span>{{localize "OV.Set.RotationMin"}}</span><input type="number" name="minRotation" value="{{selectedSet.minRotation}}"></label><label><span>{{localize "OV.Set.RotationMax"}}</span><input type="number" name="maxRotation" value="{{selectedSet.maxRotation}}"></label><label><span>{{localize "OV.Set.Blur"}}</span><input type="number" name="maxBlur" value="{{selectedSet.maxBlur}}" step="0.1"></label><label><span>{{localize "OV.Set.Blend"}}</span><select name="blendMode">{{#each selectedSet.blendChoices}}<option value="{{value}}" {{#if selected}}selected{{/if}}>{{label}}</option>{{/each}}</select></label><label><span>{{localize "OV.Set.Fit"}}</span><select name="fitMode">{{#each selectedSet.fitChoices}}<option value="{{value}}" {{#if selected}}selected{{/if}}>{{label}}</option>{{/each}}</select></label><label><span>{{localize "OV.Set.EdgeSize"}}</span><input type="number" name="edgeFadeSize" value="{{selectedSet.edgeFadeSize}}"></label></div><div class="ov-check-grid compact"><label><input type="checkbox" name="edgeFade" {{#if selectedSet.edgeFade}}checked{{/if}}> {{localize "OV.Set.EdgeFade"}}</label><label><input type="checkbox" name="vignette" {{#if selectedSet.vignette}}checked{{/if}}> {{localize "OV.Set.Vignette"}}</label></div></section>
+        <section class="ov-card"><header><h3>{{localize "OV.Set.Sound"}}</h3></header><div class="ov-form-grid three"><label><span>{{localize "OV.Set.AudioChance"}}</span><input type="number" name="audioChance" value="{{selectedSet.audioChance}}" min="0" max="1" step="0.01"></label><label><span>{{localize "OV.Set.VolumeMin"}}</span><input type="number" name="minVolume" value="{{selectedSet.minVolume}}" min="0" max="1" step="0.01"></label><label><span>{{localize "OV.Set.VolumeMax"}}</span><input type="number" name="maxVolume" value="{{selectedSet.maxVolume}}" min="0" max="1" step="0.01"></label></div><p class="ov-muted-text ov-inline-help">{{localize "OV.Set.AudioLifetimeHelp"}}</p></section>
+        <section class="ov-card ov-assets">
+          <header>
+            <h3>{{localize "OV.Assets.Images"}} <span class="ov-count">{{selectedSet.images.length}}</span></h3>
+            <div class="ov-actions">
+              <button type="button" data-action="addImage"><i class="fa-solid fa-image"></i> {{localize "OV.Assets.Add"}}</button>
+              <button type="button" data-action="addImageFolder" title="{{localize "OV.Assets.AddFolder"}}"><i class="fa-solid fa-folder"></i></button>
+              <button type="button" data-action="addImageFolderRecursive" title="{{localize "OV.Assets.Recursive"}}"><i class="fa-solid fa-folder-tree"></i></button>
+              <button type="button" data-action="importImagesText" title="{{localize "OV.Assets.ImportImages"}}"><i class="fa-solid fa-paste"></i></button>
+            </div>
+          </header>
+          <div class="ov-media-toolbar">
+            <label class="ov-search"><i class="fa-solid fa-magnifying-glass"></i><input type="search" data-asset-filter="image" placeholder="{{localize "OV.Assets.Filter"}}"></label>
+            <span class="ov-muted-text">{{localize "OV.Assets.ImagesHint"}}</span>
+          </div>
+          <div class="ov-media-grid" data-asset-container="image">
+            {{#each selectedSet.visibleImages}}
+            <article class="ov-media-card" data-asset-item data-asset-path="{{path}}">
+              <div class="ov-media-preview">
+                <img src="{{path}}" data-asset-preview="{{path}}" loading="lazy" alt="">
+                <span class="ov-broken-label"><i class="fa-solid fa-triangle-exclamation"></i> {{localize "OV.Assets.Missing"}}</span>
+              </div>
+              <div class="ov-media-caption" title="{{path}}">{{name}}</div>
+              <div class="ov-media-actions">
+                <button type="button" data-action="previewAsset" data-path="{{path}}" title="{{localize "OV.Director.Local"}}"><i class="fa-solid fa-play"></i></button>
+                <button type="button" data-action="cueAssetRemote" data-path="{{path}}" title="{{localize "OV.Director.Send"}}"><i class="fa-solid fa-bolt"></i></button>
+                <button type="button" data-action="removeImage" data-index="{{index}}" class="danger" title="{{localize "OV.Common.Delete"}}"><i class="fa-solid fa-xmark"></i></button>
+              </div>
+            </article>
+            {{else}}<p class="ov-empty">{{localize "OV.Assets.NoImages"}}</p>{{/each}}
+          </div>
+          {{#if selectedSet.hasMoreImages}}<button type="button" data-action="loadMoreAssets" class="ov-load-more">{{localize "OV.Assets.LoadMore"}}</button>{{/if}}
+          <details class="ov-raw-editor">
+            <summary><i class="fa-solid fa-code"></i> {{localize "OV.Assets.RawPaths"}}</summary>
+            <textarea name="imagesText" rows="5" spellcheck="false">{{selectedSet.imagesText}}</textarea>
+          </details>
+        </section>
+        <section class="ov-card ov-assets">
+          <header>
+            <h3>{{localize "OV.Assets.Audio"}} <span class="ov-count">{{selectedSet.audio.length}}</span></h3>
+            <div class="ov-actions">
+              <button type="button" data-action="addAudio"><i class="fa-solid fa-music"></i> {{localize "OV.Assets.Add"}}</button>
+              <button type="button" data-action="importAudioText" title="{{localize "OV.Assets.ImportAudio"}}"><i class="fa-solid fa-paste"></i></button>
+            </div>
+          </header>
+          <div class="ov-playlist-source">
+            <div class="ov-source-heading">
+              <div><strong>{{localize "OV.Set.Playlists"}}</strong><small>{{localize "OV.Set.PlaylistsHelp"}}</small></div>
+              <span class="ov-chip">{{selectedPlaylistCount}} · {{selectedPlaylistSoundCount}} {{localize "OV.Set.Tracks"}}</span>
+            </div>
+            <div class="ov-playlist-grid">
+              {{#each playlists}}
+              <label class="ov-playlist-option {{#if selected}}active{{/if}}">
+                <input type="checkbox" name="playlistIds" value="{{id}}" {{#if selected}}checked{{/if}}>
+                <i class="fa-solid fa-list-music"></i>
+                <span><strong>{{name}}</strong><small>{{sounds}} {{localize "OV.Set.Tracks"}}</small></span>
+              </label>
+              {{else}}<p class="ov-empty">{{localize "OV.Set.NoPlaylists"}}</p>{{/each}}
+            </div>
+          </div>
+          <div class="ov-media-toolbar">
+            <label class="ov-search"><i class="fa-solid fa-magnifying-glass"></i><input type="search" data-asset-filter="audio" placeholder="{{localize "OV.Assets.Filter"}}"></label>
+            <span class="ov-muted-text">{{localize "OV.Set.DirectAudioHelp"}}</span>
+          </div>
+          <div class="ov-audio-list" data-asset-container="audio">
+            {{#each selectedSet.audioItems}}
+            <div class="ov-audio-row" data-asset-item data-asset-path="{{path}}">
+              <i class="fa-solid fa-waveform-lines"></i>
+              <span title="{{path}}"><strong>{{name}}</strong><small>{{path}}</small></span>
+              <button type="button" data-action="previewAudio" data-path="{{path}}" title="{{localize "OV.Director.Local"}}"><i class="fa-solid fa-play"></i></button>
+              <button type="button" data-action="removeAudio" data-index="{{index}}" class="danger" title="{{localize "OV.Common.Delete"}}"><i class="fa-solid fa-xmark"></i></button>
+            </div>
+            {{else}}<p class="ov-empty">{{localize "OV.Assets.NoAudio"}}</p>{{/each}}
+          </div>
+          <details class="ov-raw-editor">
+            <summary><i class="fa-solid fa-code"></i> {{localize "OV.Assets.RawPaths"}}</summary>
+            <textarea name="audioText" rows="4" spellcheck="false">{{selectedSet.audioText}}</textarea>
+          </details>
+        </section>
+        <section class="ov-card"><header><h3>{{localize "OV.Set.WeightedEntries"}}</h3><button type="button" data-action="addEntry"><i class="fa-solid fa-plus"></i> {{localize "OV.Common.Add"}}</button></header><div class="ov-stack">{{#each selectedSet.entries}}<div class="ov-entry-row ov-inline-editor" data-entry-id="{{id}}"><label class="checkbox"><input type="checkbox" name="entryEnabled" {{#if enabled}}checked{{/if}}> {{localize "OV.Common.Enabled"}}</label><input name="entryImage" value="{{image}}" placeholder="image"><input name="entryAudio" value="{{audio}}" placeholder="audio"><input type="number" name="entryWeight" value="{{weight}}" title="weight"><input type="number" name="entryDuration" value="{{duration}}" title="ms"><input name="entryCaption" value="{{caption}}" placeholder="caption"><input name="entryTags" value="{{tagsText}}" placeholder="tags"><input name="entrySafety" value="{{safetyText}}" placeholder="safety"><input type="number" name="entryCooldown" value="{{cooldown}}" title="cooldown"><button type="button" data-action="removeEntry" data-entry-id="{{id}}" class="danger icon"><i class="fa-solid fa-trash"></i></button></div>{{else}}<p class="ov-empty">{{localize "OV.Set.NoEntries"}}</p>{{/each}}</div></section>
+        <section class="ov-card"><header><h3>{{localize "OV.Set.Sequence"}}</h3><button type="button" data-action="addSequenceStep"><i class="fa-solid fa-plus"></i> {{localize "OV.Common.Add"}}</button></header><div class="ov-stack">{{#each selectedSet.sequence}}<div class="ov-sequence-row ov-inline-editor" data-step-id="{{id}}"><div class="ov-move"><button type="button" data-action="moveSequenceStep" data-step-id="{{id}}" data-delta="-1"><i class="fa-solid fa-chevron-up"></i></button><button type="button" data-action="moveSequenceStep" data-step-id="{{id}}" data-delta="1"><i class="fa-solid fa-chevron-down"></i></button></div><input type="number" name="stepDelay" value="{{delay}}" title="delay"><input type="number" name="stepDuration" value="{{duration}}" title="duration"><input name="stepImage" value="{{image}}" placeholder="image"><input name="stepAudio" value="{{audio}}" placeholder="audio"><input name="stepCaption" value="{{caption}}" placeholder="caption"><select name="stepTransition">{{#each transitionChoices}}<option value="{{value}}" {{#if selected}}selected{{/if}}>{{label}}</option>{{/each}}</select><button type="button" data-action="removeSequenceStep" data-step-id="{{id}}" class="danger icon"><i class="fa-solid fa-trash"></i></button></div>{{else}}<p class="ov-empty">{{localize "OV.Set.NoSequence"}}</p>{{/each}}</div></section>
+        <section class="ov-card"><header><h3>{{localize "OV.Set.Triggers"}}</h3><button type="button" data-action="addTrigger"><i class="fa-solid fa-plus"></i> {{localize "OV.Common.Add"}}</button></header><div class="ov-stack">{{#each selectedSet.triggers}}<details class="ov-trigger" data-trigger-id="{{id}}"><summary><label class="checkbox"><input type="checkbox" name="triggerEnabled" {{#if enabled}}checked{{/if}}> {{localize "OV.Common.Enabled"}}</label><select name="triggerType">{{#each typeChoices}}<option value="{{value}}" {{#if selected}}selected{{/if}}>{{label}}</option>{{/each}}</select><label>{{localize "OV.Set.Chance"}} <input type="number" name="triggerChance" value="{{chance}}" min="0" max="1" step="0.01"></label><label>{{localize "OV.Set.Cooldown"}} <input type="number" name="triggerCooldown" value="{{cooldown}}"></label><button type="button" data-action="removeTrigger" data-trigger-id="{{id}}" class="danger icon"><i class="fa-solid fa-trash"></i></button></summary><div class="ov-form-grid four"><label>sceneId<input name="triggerSceneId" value="{{config.sceneId}}"></label><label>actorId<input name="triggerActorId" value="{{config.actorId}}"></label><label>tokenId<input name="triggerTokenId" value="{{config.tokenId}}"></label><label>regionId<input name="triggerRegionId" value="{{config.regionId}}"></label><label>userId<input name="triggerUserId" value="{{config.userId}}"></label><label>contains<input name="triggerContains" value="{{config.contains}}"></label><label>path<input name="triggerPath" value="{{config.path}}"></label><label>equals<input name="triggerEquals" value="{{config.equals}}"></label><label>minimum<input name="triggerMinimum" value="{{config.minimum}}"></label><label>maximum<input name="triggerMaximum" value="{{config.maximum}}"></label></div></details>{{else}}<p class="ov-empty">{{localize "OV.Set.NoTriggers"}}</p>{{/each}}</div></section>
+        <section class="ov-card"><header><h3>{{localize "OV.Assets.Tools"}}</h3></header><div class="ov-actions wrap"><button type="button" data-action="testDraft"><i class="fa-solid fa-play"></i> {{localize "OV.Director.Local"}}</button><button type="button" data-action="cueRemote"><i class="fa-solid fa-bolt"></i> {{localize "OV.Director.Send"}}</button><button type="button" data-action="scanAssets"><i class="fa-solid fa-stethoscope"></i> {{localize "OV.Assets.Scan"}}</button><button type="button" data-action="rewriteAssetPaths"><i class="fa-solid fa-arrows-left-right"></i> {{localize "OV.Assets.Rewrite"}}</button></div>{{#if scanProgress}}<progress max="{{scanProgress.total}}" value="{{scanProgress.completed}}"></progress>{{/if}}{{#if scanResults}}<p>{{localize "OV.Assets.ScanResult"}}: {{scanResults.ok}} / {{scanResults.total}}</p><div class="ov-path-list errors">{{#each scanResults.errors}}<div><span class="ov-chip danger">{{type}}</span><code>{{src}}</code><span>{{error}}</span></div>{{/each}}</div>{{/if}}</section>
+      </div>
+      {{else}}<div class="ov-empty-state"><i class="fa-solid fa-layer-group"></i><p>{{localize "OV.Set.None"}}</p><button type="button" data-action="addSet" class="primary">{{localize "OV.Set.Add"}}</button></div>{{/if}}
+    </section>
+  </main>
+  {{/if}}
+
+  {{#if isActors}}
+  <main class="ov-workspace" data-scroll-key="actors"><section class="ov-card"><header><div><h2>{{localize "OV.Actors.Title"}}</h2><p>{{localize "OV.Actors.Help"}}</p></div></header><div class="ov-data-table"><div class="ov-data-head"><span>{{localize "OV.Common.Name"}}</span><span>{{localize "OV.Common.Status"}}</span><span>{{localize "OV.ActorEditor.Rank"}}</span><span>{{localize "OV.Common.Tags"}}</span><span>{{localize "OV.ActorEditor.Sets"}}</span><span></span></div>{{#each actors}}<div class="ov-data-row"><span class="ov-name-cell"><img src="{{img}}" alt=""><strong>{{name}}</strong></span><span><button type="button" data-action="toggleActor" data-actor-id="{{id}}" class="ov-toggle {{#if enabled}}active{{/if}}">{{#if enabled}}{{localize "OV.Common.Enabled"}}{{else}}{{localize "OV.Common.Disabled"}}{{/if}}</button></span><span>{{rank}}</span><span>{{tags}}</span><span>{{setNames}}</span><span><button type="button" data-action="editActor" data-actor-id="{{id}}"><i class="fa-solid fa-pen"></i></button></span></div>{{else}}<p class="ov-empty">{{localize "OV.Actors.None"}}</p>{{/each}}</div></section></main>
+  {{/if}}
+
+  {{#if isTokens}}
+  <main class="ov-workspace ov-token-layout" data-scroll-key="tokens">
+    <section class="ov-card"><header><div><h2>{{localize "OV.Tokens.Selected"}} ({{selectedTokens.length}})</h2><p>{{localize "OV.Tokens.BulkHelp"}}</p></div><div class="ov-actions"><button type="button" data-action="markSelectedTokens"><i class="fa-solid fa-eye"></i> {{localize "OV.Tokens.Mark"}}</button><button type="button" data-action="clearSelectedTokens" class="danger"><i class="fa-solid fa-eye-slash"></i> {{localize "OV.Tokens.Clear"}}</button></div></header><div class="ov-chip-row">{{#each tokenPresets}}<button type="button" data-action="applyTokenPreset" data-preset="{{id}}">{{label}}</button>{{/each}}</div><div class="ov-bulk-token" data-bulk-token><div class="ov-form-grid four"><label><span>{{localize "OV.TokenEditor.RequiredRank"}}</span><input type="number" name="bulkRequiredRank" value="1"></label><label><span>{{localize "OV.TokenEditor.RequiredTags"}}</span><input name="bulkRequiredTags"></label><label><span>{{localize "OV.Common.Stage"}}</span><input type="number" name="bulkRevealStage" value="4" min="0" max="5"></label><label><span>{{localize "OV.TokenEditor.Opacity"}}</span><input type="number" name="bulkOpacity" value="1" min=".05" max="1" step=".05"></label><label><span>{{localize "OV.TokenEditor.MaxDistance"}}</span><input type="number" name="bulkDistance" value="0"></label></div><div class="ov-check-grid compact"><label><input type="checkbox" name="bulkLineOfSight"> {{localize "OV.TokenEditor.LineOfSight"}}</label><label><input type="checkbox" name="bulkSuppressLight" checked> {{localize "OV.TokenEditor.SuppressLight"}}</label><label><input type="checkbox" name="bulkSuppressVision" checked> {{localize "OV.TokenEditor.SuppressVision"}}</label></div><button type="button" data-action="applySelectedTokenSettings" class="primary"><i class="fa-solid fa-check"></i> {{localize "OV.Tokens.ApplyBulk"}}</button></div><div class="ov-token-cards">{{#each selectedTokens}}<article><img src="{{img}}" alt=""><div><strong>{{name}}</strong><span>R{{requiredRank}} · S{{stage}} · {{reasons}}</span></div><button type="button" data-action="editToken" data-token-id="{{id}}"><i class="fa-solid fa-pen"></i></button></article>{{else}}<p class="ov-empty">{{localize "OV.Notifications.NoTokensSelected"}}</p>{{/each}}</div></section>
+    <section class="ov-card"><header><h2>{{localize "OV.Tokens.Scene"}} ({{otherworldlyTokens.length}})</h2><div class="ov-actions"><button type="button" data-action="toggleSceneLayer" class="{{#if sceneLayer}}active{{/if}}"><i class="fa-solid fa-border-all"></i> {{localize "OV.Tokens.Layer"}}</button><button type="button" data-action="refreshVisibility"><i class="fa-solid fa-rotate"></i></button></div></header><div class="ov-preview-users"><button type="button" data-action="previewUser" data-user-id="" class="{{#unless previewUserId}}active{{/unless}}">GM</button>{{#each users}}<button type="button" data-action="previewUser" data-user-id="{{id}}" class="{{#if checked}}selected-recipient{{/if}}">{{name}}</button>{{/each}}</div><div class="ov-token-cards">{{#each otherworldlyTokens}}<article><img src="{{img}}" alt=""><div><strong>{{name}}</strong><span>R{{requiredRank}} · S{{stage}} · {{#if canSee}}{{localize "OV.Common.Visible"}}{{else}}{{localize "OV.Common.Hidden"}}{{/if}} · {{reasons}}</span></div><button type="button" data-action="toggleToken" data-token-id="{{id}}" class="ov-toggle active"><i class="fa-solid fa-eye"></i></button><button type="button" data-action="editToken" data-token-id="{{id}}"><i class="fa-solid fa-pen"></i></button></article>{{else}}<p class="ov-empty">{{localize "OV.Tokens.None"}}</p>{{/each}}</div><button type="button" data-action="manifestSelected"><i class="fa-solid fa-bolt"></i> {{localize "OV.Tokens.ManifestSelected"}}</button></section>
+  </main>
+  {{/if}}
+
+  {{#if isDiagnostics}}
+  <main class="ov-workspace ov-diagnostics" data-scroll-key="diagnostics">
+    <section class="ov-card"><header><h2>{{localize "OV.Diagnostics.Health"}}</h2><div class="ov-actions"><button type="button" data-action="exportDiagnostics"><i class="fa-solid fa-download"></i> {{localize "OV.Diagnostics.Export"}}</button><button type="button" data-action="clearMediaCache"><i class="fa-solid fa-broom"></i> {{localize "OV.Diagnostics.ClearCache"}}</button></div></header><div class="ov-kpi-grid"><article><span>{{localize "OV.Diagnostics.Patch"}}</span><strong>{{diagnostics.visibility.mode}}</strong></article><article><span>{{localize "OV.Diagnostics.Effects"}}</span><strong>{{diagnostics.effects.effects}}</strong></article><article><span>{{localize "OV.Diagnostics.Cache"}}</span><strong>{{diagnostics.media.images}} / {{diagnostics.media.audio}}</strong></article><article><span>{{localize "OV.Diagnostics.Processed"}}</span><strong>{{diagnostics.commands.processed}}</strong></article><article><span>{{localize "OV.Diagnostics.Orphans"}}</span><strong>{{diagnostics.orphans.length}}</strong></article><article><span>{{localize "OV.Diagnostics.Migration"}}</span><strong>{{#if diagnostics.migrationComplete}}OK{{else}}pending{{/if}}</strong></article></div></section>
+    <section class="ov-card"><header><h3>{{localize "OV.Diagnostics.Data"}}</h3></header><div class="ov-actions wrap"><button type="button" data-action="exportSets"><i class="fa-solid fa-file-export"></i> {{localize "OV.Diagnostics.ExportSets"}}</button><button type="button" data-action="importSets"><i class="fa-solid fa-file-import"></i> {{localize "OV.Diagnostics.ImportSets"}}</button><button type="button" data-action="exportMigrationBackup"><i class="fa-solid fa-box-archive"></i> {{localize "OV.Diagnostics.ExportBackup"}}</button><button type="button" data-action="restoreMigrationBackup" class="danger"><i class="fa-solid fa-clock-rotate-left"></i> {{localize "OV.Diagnostics.RestoreBackup"}}</button><button type="button" data-action="repairOrphans"><i class="fa-solid fa-link"></i> {{localize "OV.Diagnostics.Repair"}}</button><button type="button" data-action="createMacro"><i class="fa-solid fa-wand-magic-sparkles"></i> {{localize "OV.Diagnostics.CreateMacro"}}</button></div><p>{{localize "OV.Diagnostics.BackupAt"}}: {{diagnostics.backupAt}}</p></section>
+    <section class="ov-card"><header><h3>{{localize "OV.Diagnostics.Orphans"}}</h3></header><div class="ov-table-list">{{#each diagnostics.orphans}}<div><strong>{{actorName}}</strong><code>{{setUuid}}</code></div>{{else}}<p class="ov-empty">{{localize "OV.Diagnostics.NoOrphans"}}</p>{{/each}}</div></section>
+    <section class="ov-card"><header><h3>{{localize "OV.Diagnostics.Commands"}}</h3></header><div class="ov-table-list">{{#each diagnostics.commands.recentErrors}}<div><span>{{at}}</span><strong>{{reason}}</strong><span>{{type}}</span></div>{{else}}<p class="ov-empty">{{localize "OV.Diagnostics.NoErrors"}}</p>{{/each}}</div></section>
+    <section class="ov-card"><header><h3>{{localize "OV.Diagnostics.SessionLog"}}</h3><button type="button" data-action="clearSessionLog"><i class="fa-solid fa-trash"></i></button></header><div class="ov-table-list">{{#each diagnostics.sessionLog}}<div><span>{{at}}</span><strong>{{type}}</strong><span>{{direction}}</span><code>{{setUuid}}</code></div>{{else}}<p class="ov-empty">{{localize "OV.Diagnostics.NoLog"}}</p>{{/each}}</div></section>
+  </main>
+  {{/if}}
+</div>

@@ -1,0 +1,15 @@
+<div class="ov-editor-part">
+<div class="ov-editor-body standard-form">
+  <header class="ov-safety-header"><i class="fa-solid fa-shield-heart"></i><div><h2>{{localize "OV.Safety.Title"}}</h2><p>{{localize "OV.Safety.Help"}}</p></div></header>
+  <label class="checkbox ov-master-toggle"><input type="checkbox" name="enabled" {{#if enabled}}checked{{/if}}> {{localize "OV.Safety.Enable"}}</label>
+  <div class="form-group"><label>{{localize "OV.Safety.VolumeCap"}}</label><input type="range" name="volumeCap" value="{{volumeCap}}" min="0" max="1" step="0.05"><span>{{volumeCap}}</span></div>
+  <div class="form-group"><label>{{localize "OV.Safety.OpacityCap"}}</label><input type="range" name="opacityCap" value="{{opacityCap}}" min="0.05" max="1" step="0.05"><span>{{opacityCap}}</span></div>
+  <label class="checkbox"><input type="checkbox" name="reducedMotion" {{#if reducedMotion}}checked{{/if}}> {{localize "OV.Safety.ReducedMotion"}}</label>
+  <label class="checkbox"><input type="checkbox" name="photosensitive" {{#if photosensitive}}checked{{/if}}> {{localize "OV.Safety.Photosensitive"}}</label>
+  <label class="checkbox"><input type="checkbox" name="allowHidden" {{#if allowHidden}}checked{{/if}}> {{localize "OV.Safety.AllowHidden"}}</label>
+  <div class="form-group"><label>{{localize "OV.Safety.BlockedTags"}}</label><input name="blockedTags" value="{{blockedTags}}" placeholder="flicker, blood"></div>
+  <div class="form-group"><label>{{localize "OV.Safety.MinimumInterval"}}</label><input type="number" name="minimumInterval" value="{{minimumInterval}}" min="0" max="3600" step="1"></div>
+  <div class="ov-emergency {{#if emergencyMute}}is-active{{/if}}"><strong>{{localize "OV.Safety.Emergency"}}</strong><span>{{#if emergencyMute}}{{localize "OV.Common.Enabled"}}{{else}}{{localize "OV.Common.Disabled"}}{{/if}}</span></div>
+</div>
+<footer class="form-footer"><button type="button" data-action="test"><i class="fa-solid fa-play"></i> {{localize "OV.Common.Test"}}</button><button type="button" data-action="emergency" class="danger"><i class="fa-solid fa-volume-xmark"></i> {{localize "OV.Safety.ToggleEmergency"}}</button><button type="button" data-action="save" class="primary"><i class="fa-solid fa-floppy-disk"></i> {{localize "OV.Common.Save"}}</button></footer>
+</div>

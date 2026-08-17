@@ -1,0 +1,64 @@
+<div class="ov-editor-part">
+<div class="ov-editor-body standard-form">
+  <header class="ov-entity-header">
+    <img src="{{token.texture.src}}" alt=""><div><h2>{{token.name}}</h2><p>{{localize "OV.TokenEditor.Help"}}</p></div>
+  </header>
+  <div class="ov-kpis"><span>{{localize "OV.TokenEditor.CurrentVisibility"}} <strong>{{#if result.canSee}}{{localize "OV.Common.Visible"}}{{else}}{{localize "OV.Common.Hidden"}}{{/if}}</strong></span><span>{{localize "OV.Common.Stage"}} <strong>{{result.stage}}</strong></span><span>{{localize "OV.TokenEditor.Reasons"}} <strong>{{result.reasons}}</strong></span></div>
+  <fieldset>
+    <legend>{{localize "OV.TokenEditor.Identity"}}</legend>
+    <label class="checkbox"><input type="checkbox" name="enabled" {{#if otherworldly.enabled}}checked{{/if}}> {{localize "OV.TokenEditor.Otherworldly"}}</label>
+    <div class="ov-form-grid three">
+      <div class="form-group"><label>{{localize "OV.TokenEditor.RequiredRank"}}</label><input type="number" name="requiredRank" value="{{otherworldly.requiredRank}}" min="0" max="20"></div>
+      <div class="form-group span-2"><label>{{localize "OV.TokenEditor.RequiredTags"}}</label><input name="requiredTags" value="{{requiredTagsText}}"></div>
+      <div class="form-group"><label>{{localize "OV.Common.Stage"}}</label><select name="revealStage">{{#each stages}}<option value="{{value}}" {{#if selected}}selected{{/if}}>{{label}}</option>{{/each}}</select></div>
+      <div class="form-group"><label>{{localize "OV.TokenEditor.Opacity"}}</label><input type="number" name="viewerOpacity" value="{{otherworldly.viewerOpacity}}" min="0.05" max="1" step="0.05"></div>
+      <div class="form-group"><label>{{localize "OV.TokenEditor.Effect"}}</label><select name="visualEffect">{{#each effects}}<option value="{{value}}" {{#if selected}}selected{{/if}}>{{label}}</option>{{/each}}</select></div>
+      <div class="form-group"><label>{{localize "OV.TokenEditor.EffectIntensity"}}</label><input type="number" name="effectIntensity" value="{{otherworldly.effectIntensity}}" min="0.1" max="3" step="0.1"></div>
+    </div>
+  </fieldset>
+  <fieldset>
+    <legend>{{localize "OV.TokenEditor.Visibility"}}</legend>
+    <div class="ov-check-grid compact">
+      <label><input type="checkbox" name="fullGhost" {{#if otherworldly.fullGhost}}checked{{/if}}> {{localize "OV.TokenEditor.FullGhost"}}</label>
+      <label><input type="checkbox" name="suppressLight" {{#if otherworldly.suppressLight}}checked{{/if}}> {{localize "OV.TokenEditor.SuppressLight"}}</label>
+      <label><input type="checkbox" name="suppressVision" {{#if otherworldly.suppressVision}}checked{{/if}}> {{localize "OV.TokenEditor.SuppressVision"}}</label>
+      <label><input type="checkbox" name="hideCombatant" {{#if otherworldly.hideCombatant}}checked{{/if}}> {{localize "OV.TokenEditor.HideCombatant"}}</label>
+      <label><input type="checkbox" name="requireLineOfSight" {{#if otherworldly.requireLineOfSight}}checked{{/if}}> {{localize "OV.TokenEditor.LineOfSight"}}</label>
+    </div>
+    <div class="ov-form-grid three">
+      <div class="form-group"><label>{{localize "OV.TokenEditor.MaxDistance"}}</label><input type="number" name="maxDistance" value="{{otherworldly.maxDistance}}" min="0" step="1"></div>
+      <div class="form-group"><label>{{localize "OV.TokenEditor.MinDarkness"}}</label><input type="number" name="minDarkness" value="{{otherworldly.minDarkness}}" min="0" max="1" step="0.05"></div>
+      <div class="form-group"><label>{{localize "OV.TokenEditor.MaxDarkness"}}</label><input type="number" name="maxDarkness" value="{{otherworldly.maxDarkness}}" min="0" max="1" step="0.05"></div>
+    </div>
+  </fieldset>
+  <fieldset>
+    <legend>{{localize "OV.TokenEditor.Intermittent"}}</legend>
+    <div class="ov-form-grid three">
+      <div class="form-group"><label>{{localize "OV.TokenEditor.MinDelay"}}</label><input type="number" name="intermittentMinDelay" value="{{otherworldly.intermittentMinDelay}}" min="1" step="1"></div>
+      <div class="form-group"><label>{{localize "OV.TokenEditor.MaxDelay"}}</label><input type="number" name="intermittentMaxDelay" value="{{otherworldly.intermittentMaxDelay}}" min="1" step="1"></div>
+      <div class="form-group"><label>{{localize "OV.TokenEditor.Duration"}}</label><input type="number" name="intermittentDuration" value="{{otherworldly.intermittentDuration}}" min="0.1" step="0.1"></div>
+    </div>
+  </fieldset>
+  <fieldset>
+    <legend>{{localize "OV.TokenEditor.Conditions"}}</legend>
+    <div data-conditions class="ov-stack">
+      {{#each conditions}}
+      <div class="ov-condition-row ov-inline-editor" data-condition-id="{{id}}">
+        <label class="checkbox"><input type="checkbox" name="conditionEnabled" {{#if enabled}}checked{{/if}}> {{localize "OV.Common.Enabled"}}</label>
+        <select name="conditionType">{{#each typeChoices}}<option value="{{value}}" {{#if selected}}selected{{/if}}>{{label}}</option>{{/each}}</select>
+        <select name="conditionOperator">{{#each operatorChoices}}<option value="{{value}}" {{#if selected}}selected{{/if}}>{{label}}</option>{{/each}}</select>
+        <input name="conditionPath" value="{{path}}" placeholder="system.path">
+        <input name="conditionValue" value="{{valueText}}" placeholder="id, value">
+        <button type="button" data-action="removeCondition" class="icon danger"><i class="fa-solid fa-trash"></i></button>
+      </div>
+      {{/each}}
+    </div>
+    <button type="button" data-action="addCondition"><i class="fa-solid fa-plus"></i> {{localize "OV.TokenEditor.AddCondition"}}</button>
+  </fieldset>
+  <fieldset>
+    <legend>{{localize "OV.Common.Recipients"}}</legend>
+    <div class="ov-check-grid compact">{{#each users}}<label><input type="checkbox" name="recipientIds" value="{{id}}" {{#if active}}checked{{/if}}> {{name}}</label>{{/each}}</div>
+  </fieldset>
+</div>
+<footer class="form-footer"><button type="button" data-action="manifest"><i class="fa-solid fa-bolt"></i> {{localize "OV.TokenEditor.Manifest"}}</button><button type="button" data-action="save" class="primary"><i class="fa-solid fa-floppy-disk"></i> {{localize "OV.Common.Save"}}</button></footer>
+</div>

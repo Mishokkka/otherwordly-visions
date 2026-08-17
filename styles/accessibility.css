@@ -1,0 +1,6 @@
+@media (prefers-reduced-motion: reduce) {
+  #ov-flash-layer .ov-flash-frame, #ov-flash-layer .ov-flash-image { animation: none !important; transform: none !important; transition-duration: 160ms !important; }
+  .otherworldly-visions * { scroll-behavior: auto !important; }
+}
+.otherworldly-visions button:focus-visible, .otherworldly-visions input:focus-visible, .otherworldly-visions select:focus-visible, .otherworldly-visions textarea:focus-visible { outline: 2px solid var(--ov-accent-2); outline-offset: 1px; }
+.otherworldly-visions progress { width: 100%; height: 12px; margin-top: 8px; }

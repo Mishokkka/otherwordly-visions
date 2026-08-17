@@ -1,0 +1,416 @@
+{
+  "OV": {
+    "ActorEditor": {
+      "Button": "Touched",
+      "Eligible": "Eligible tokens",
+      "Help": "Controls which vision sets and otherworldly manifestations this actor can perceive.",
+      "NoRevelations": "No Otherworldly tokens on the current scene.",
+      "NoSets": "No vision sets exist.",
+      "Rank": "Perception rank",
+      "Revelations": "Progressive revelations",
+      "RevelationsHelp": "Set an actor-specific revelation stage for each Otherworldly token on the current scene. Stage 0 uses the token default.",
+      "SceneTokens": "Scene tokens",
+      "Sets": "Assigned vision sets",
+      "Status": "Touched status",
+      "Title": "Touched actor",
+      "Touched": "Actor is Touched",
+      "Visible": "Currently visible"
+    },
+    "Actors": {
+      "Help": "Actors with an existing Touched flag are listed here. Open any actor sheet to add the flag.",
+      "None": "No actors have Touched data yet.",
+      "Title": "Touched actors"
+    },
+    "Assets": {
+      "Add": "Add",
+      "Audio": "Audio pool",
+      "Images": "Image pool",
+      "ImportAudio": "Import audio paths",
+      "ImportImages": "Import image paths",
+      "LoadMore": "Load more thumbnails",
+      "NewPrefix": "New path prefix",
+      "OldPrefix": "Old path prefix",
+      "Paths": "One path per line",
+      "Recursive": "Import folder recursively",
+      "Rewrite": "Rewrite asset paths",
+      "Scan": "Asset Doctor",
+      "ScanResult": "Valid assets",
+      "Tools": "Asset tools",
+      "AddFolder": "Add folder",
+      "Filter": "Filter by name or path",
+      "ImagesHint": "Showing 24 items at a time. Load more only when needed.",
+      "Missing": "File not found",
+      "NoImages": "No images in this pool.",
+      "NoAudio": "No audio in this pool.",
+      "RawPaths": "Edit raw path list"
+    },
+    "Common": {
+      "Add": "Add",
+      "Audio": "audio",
+      "Copy": "copy",
+      "Disabled": "Disabled",
+      "Edit": "Edit",
+      "Enabled": "Enabled",
+      "Hidden": "Hidden",
+      "Images": "images",
+      "Name": "Name",
+      "Recipients": "Recipients",
+      "Revert": "Revert",
+      "Running": "Running",
+      "Save": "Save",
+      "Stage": "Stage",
+      "Status": "Status",
+      "Stopped": "Stopped",
+      "Tags": "Tags",
+      "Test": "Test",
+      "Unsaved": "Unsaved changes",
+      "Visible": "Visible",
+      "Delete": "Delete"
+    },
+    "Condition": {
+      "ActorProperty": "Actor property",
+      "CueShown": "Cue has been shown",
+      "Scene": "Scene",
+      "TargetElevation": "Target elevation",
+      "TargetRegion": "Target region",
+      "TimeOnScene": "Time on scene",
+      "User": "User",
+      "ViewerElevation": "Viewer elevation",
+      "ViewerRegion": "Viewer region"
+    },
+    "Confirm": {
+      "DeleteSetBody": "Delete “{name}” and remove its actor references?",
+      "DeleteSetTitle": "Delete vision set?",
+      "RestoreBody": "Current module data and flags will be replaced. Foundry will reload after restoration.",
+      "RestoreTitle": "Restore migration backup?"
+    },
+    "Diagnostics": {
+      "BackupAt": "Migration backup",
+      "Cache": "Media cache",
+      "ClearCache": "Clear cache",
+      "Commands": "Command errors",
+      "CreateMacro": "Create manager macro",
+      "Data": "Data and recovery",
+      "Effects": "Active effects",
+      "Export": "Export diagnostics",
+      "ExportBackup": "Export migration backup",
+      "ExportSets": "Export sets",
+      "Health": "System health",
+      "ImportSets": "Import sets",
+      "Migration": "Migration",
+      "NoErrors": "No command errors.",
+      "NoLog": "Session log is empty.",
+      "NoOrphans": "No orphan set references.",
+      "Orphans": "Orphan references",
+      "Patch": "Visibility patch",
+      "Processed": "Processed commands",
+      "Repair": "Repair orphan references",
+      "RestoreBackup": "Restore migration backup",
+      "SessionLog": "GM command log"
+    },
+    "Director": {
+      "Conflict": "Conflict policy",
+      "Countdown": "Countdown, s",
+      "Cue": "Cue console",
+      "Drop": "Drop if busy",
+      "Generation": "Generation",
+      "History": "Cue history",
+      "Idle": "No cue is playing.",
+      "Local": "Play locally",
+      "ManualTriggers": "Manual trigger tests",
+      "NoHistory": "No cues have been shown this session.",
+      "NoPlayers": "No player users are available.",
+      "Now": "Now playing",
+      "Queue": "Queue",
+      "Repeat": "Repeat last",
+      "Replace": "Replace current",
+      "ReplaceLower": "Replace lower priority",
+      "ResetSession": "Reset session memory",
+      "Scheduler": "Local scheduler",
+      "Send": "Send to recipients",
+      "StopAll": "Stop all",
+      "Sync": "Synchronize player schedulers"
+    },
+    "Effect": {
+      "None": "None",
+      "Pulse": "Pulse",
+      "Spectral": "Spectral",
+      "Void": "Void",
+      "Warp": "Warp"
+    },
+    "Fit": {
+      "Auto": "Auto",
+      "Contain": "Contain without cropping",
+      "Cover": "Cover screen"
+    },
+    "Keybindings": {
+      "EmergencyMute": {
+        "Hint": "Immediately stop current cues and toggle the local emergency mute.",
+        "Name": "Toggle emergency mute"
+      }
+    },
+    "Manager": {
+      "FlashesOff": "Flashes disabled",
+      "FlashesOn": "Flashes enabled",
+      "Title": "Otherworldly Visions",
+      "ToggleGlobal": "Toggle world flash playback"
+    },
+    "Menu": {
+      "Manager": {
+        "Hint": "Open the GM manager for visions and otherworldly tokens.",
+        "Label": "Open manager",
+        "Name": "Otherworldly Visions"
+      },
+      "Safety": {
+        "Hint": "Configure local visual, audio, motion, and safety limits.",
+        "Label": "Open safety settings",
+        "Name": "Vision safety"
+      }
+    },
+    "Notifications": {
+      "ActorSaved": "Saved Touched data for {name}.",
+      "CacheCleared": "Media cache cleared.",
+      "CueSent": "Cue sent to {count} recipients.",
+      "EmergencyOff": "Emergency mute disabled.",
+      "EmergencyOn": "Emergency mute enabled.",
+      "FilesAdded": "Added {count} files.",
+      "GMOnly": "Only a GM may open the manager.",
+      "ImportComplete": "Vision sets imported.",
+      "ImportFailed": "Import failed: {error}",
+      "MacroCreated": "Manager macro created.",
+      "Migrated": "Migration complete: {sets} sets, {actors} actors, {tokens} tokens.",
+      "MigrationFailed": "Migration failed: {error}",
+      "NoBackup": "No migration backup exists.",
+      "NoRecipients": "Select at least one recipient.",
+      "NoSetSelected": "Select at least one vision set.",
+      "NoTokensSelected": "Select one or more scene tokens.",
+      "OrphansRepaired": "Repaired {count} actor records.",
+      "RevisionConflict": "This set changed elsewhere. Reload it before saving; your draft remains open.",
+      "SafetySaved": "Local safety settings saved.",
+      "SchedulersSynced": "Synchronized {count} player clients.",
+      "SetSaved": "Saved “{name}”.",
+      "TokenSaved": "Saved token “{name}”.",
+      "VisibilityPatchUnavailable": "Token visibility could not be patched. Enable libWrapper or the direct fallback setting.",
+      "VisibilityRefreshed": "Visibility recalculated.",
+      "ActionFailed": "Action \"{action}\" failed: {error}"
+    },
+    "Operator": {
+      "Contains": "Contains",
+      "Equals": "Equals",
+      "Greater": "Greater than",
+      "GreaterOrEqual": "Greater or equal",
+      "In": "In list",
+      "Less": "Less than",
+      "LessOrEqual": "Less or equal",
+      "NotEquals": "Not equal",
+      "NotIn": "Not in list"
+    },
+    "Preset": {
+      "Cinematic": "Cinematic",
+      "Shock": "Shock",
+      "Subtle": "Subtle"
+    },
+    "Safety": {
+      "AllowHidden": "Allow playback while the browser tab is hidden",
+      "BlockedTags": "Blocked safety tags",
+      "Emergency": "Emergency mute",
+      "Enable": "Enable vision flashes on this client",
+      "Help": "These settings are local. The GM cannot override blocked tags, photosensitive mode, or emergency mute.",
+      "MinimumInterval": "Minimum interval between random cues, s",
+      "OpacityCap": "Maximum image opacity",
+      "Photosensitive": "Photosensitive mode: block flicker-tagged assets",
+      "ReducedMotion": "Reduced motion",
+      "TestCaption": "Vision safety test",
+      "Title": "Vision safety",
+      "ToggleEmergency": "Toggle emergency mute",
+      "VolumeCap": "Maximum volume"
+    },
+    "Set": {
+      "Add": "Add set",
+      "AudioChance": "Audio chance",
+      "Blend": "Blend mode",
+      "Blur": "Maximum blur",
+      "Chance": "Random chance",
+      "Cooldown": "Cooldown, s",
+      "DurationMax": "Maximum duration, ms",
+      "DurationMin": "Minimum duration, ms",
+      "EdgeFade": "Fade image edges",
+      "EdgeSize": "Edge fade size, %",
+      "Fit": "Fit mode",
+      "Identity": "Identity",
+      "MaxDelay": "Maximum delay, s",
+      "MaxSession": "Maximum per session, 0 = unlimited",
+      "MinDelay": "Minimum delay, s",
+      "New": "New vision set",
+      "NoEntries": "No weighted entries. Legacy image pool will be used.",
+      "NoRepeat": "No-repeat window",
+      "NoSequence": "No sequence. A single random asset will be shown.",
+      "NoTriggers": "No automatic triggers.",
+      "None": "No vision sets exist.",
+      "OpacityMax": "Maximum opacity",
+      "OpacityMin": "Minimum opacity",
+      "Playlists": "Foundry playlists",
+      "RotationMax": "Maximum rotation",
+      "RotationMin": "Minimum rotation",
+      "SafetyTags": "Safety tags",
+      "ScaleMax": "Maximum scale",
+      "ScaleMin": "Minimum scale",
+      "Schedule": "Random scheduling",
+      "Sequence": "Cinematic sequence",
+      "Sound": "Sound",
+      "Triggers": "Automatic triggers",
+      "Vignette": "Vignette",
+      "Visuals": "Visual presentation",
+      "VolumeMax": "Maximum volume",
+      "VolumeMin": "Minimum volume",
+      "WeightedEntries": "Weighted entries",
+      "AudioLifetimeHelp": "Audio starts with the flash and plays to completion independently of the image duration. Only Stop All or module shutdown stops it.",
+      "PlaylistsHelp": "Checked playlists are part of the shared audio pool. A track is chosen randomly from them or from the individual files below.",
+      "Tracks": "tracks",
+      "NoPlaylists": "No playlists are available in this world.",
+      "DirectAudioHelp": "Individual audio files"
+    },
+    "Settings": {
+      "AllowHidden": {
+        "Hint": "Allow vision playback while the browser tab is hidden.",
+        "Name": "Play in hidden tab"
+      },
+      "BlockedTags": {
+        "Hint": "Assets with any matching tag are suppressed locally.",
+        "Name": "Blocked safety tags"
+      },
+      "Debug": {
+        "Hint": "Write detailed module events to the browser console.",
+        "Name": "Debug logging"
+      },
+      "DirectFallback": {
+        "Hint": "Use a carefully restored direct getter patch when libWrapper is not active. Requires reload.",
+        "Name": "Allow direct Token visibility fallback"
+      },
+      "EmergencyMute": {
+        "Hint": "Immediately stop and suppress audio-only cues.",
+        "Name": "Emergency mute"
+      },
+      "FlashEnabled": {
+        "Hint": "Master switch for automatic and remote vision playback.",
+        "Name": "Enable world vision flashes"
+      },
+      "MinimumInterval": {
+        "Hint": "Local minimum interval in seconds between random cues.",
+        "Name": "Minimum random cue interval"
+      },
+      "OpacityCap": {
+        "Hint": "Local upper limit for image opacity.",
+        "Name": "Maximum vision opacity"
+      },
+      "Photosensitive": {
+        "Hint": "Block flicker-tagged assets and reduce transitions.",
+        "Name": "Photosensitive mode"
+      },
+      "PlayerFlash": {
+        "Hint": "Local playback switch.",
+        "Name": "Enable flashes on this client"
+      },
+      "ReducedMotion": {
+        "Hint": "Disable scale, rotation, and blur animation.",
+        "Name": "Reduced motion"
+      },
+      "VolumeCap": {
+        "Hint": "Local upper limit for vision audio.",
+        "Name": "Maximum vision volume"
+      }
+    },
+    "Stage": {
+      "Label": "Stage {stage}"
+    },
+    "Stats": {
+      "Audio": "Audio",
+      "Images": "Images",
+      "Jobs": "Scheduled jobs",
+      "Sets": "Sets",
+      "Tokens": "Otherworldly tokens",
+      "Touched": "Touched actors"
+    },
+    "Tab": {
+      "Actors": "Touched actors",
+      "Diagnostics": "Diagnostics",
+      "Director": "Director",
+      "Sets": "Vision sets",
+      "Tokens": "Otherworldly tokens"
+    },
+    "TokenEditor": {
+      "AddCondition": "Add condition",
+      "Conditions": "Visibility conditions",
+      "CurrentVisibility": "Current visibility",
+      "Duration": "Visible duration, s",
+      "Effect": "Visual effect",
+      "EffectIntensity": "Effect intensity",
+      "FullGhost": "Fully non-interactive while hidden",
+      "Help": "Controls who can perceive this token and under which scene conditions.",
+      "HideCombatant": "Hide from combat tracker",
+      "Identity": "Identity and requirements",
+      "Intermittent": "Intermittent manifestation",
+      "LineOfSight": "Require line of sight",
+      "Manifest": "Manifest now",
+      "MaxDarkness": "Maximum darkness",
+      "MaxDelay": "Maximum delay, s",
+      "MaxDistance": "Maximum distance, 0 = unlimited",
+      "MinDarkness": "Minimum darkness",
+      "MinDelay": "Minimum delay, s",
+      "Opacity": "Viewer opacity",
+      "Otherworldly": "Token is Otherworldly",
+      "Reasons": "Reason",
+      "RequiredRank": "Required rank",
+      "RequiredTags": "Required tags",
+      "SuppressLight": "Suppress emitted light while hidden",
+      "SuppressVision": "Suppress vision source while hidden",
+      "Title": "Otherworldly token",
+      "Visibility": "Visibility and sources"
+    },
+    "TokenHud": {
+      "Disabled": "Otherworldly token disabled. Right click to edit.",
+      "Enabled": "Otherworldly token enabled. Right click to edit."
+    },
+    "TokenPreset": {
+      "Absolute": "Absolute concealment",
+      "Intermittent": "Intermittent manifestation",
+      "Proximity": "Proximity and LOS"
+    },
+    "Tokens": {
+      "ApplyBulk": "Apply to selected",
+      "BulkHelp": "Settings are applied to all currently controlled tokens in one scene update.",
+      "Clear": "Clear flags",
+      "Layer": "GM outline layer",
+      "ManifestSelected": "Manifest selected tokens",
+      "Mark": "Mark as Otherworldly",
+      "None": "No Otherworldly tokens on this scene.",
+      "Scene": "Otherworldly tokens on scene",
+      "Selected": "Selected tokens"
+    },
+    "Transition": {
+      "Cut": "Cut",
+      "Fade": "Fade",
+      "Pulse": "Pulse"
+    },
+    "Trigger": {
+      "ActorUpdated": "Actor update",
+      "ChatMessage": "Chat message",
+      "CombatEnd": "Combat end",
+      "CombatStart": "Combat start",
+      "Darkness": "Darkness changed",
+      "FblBane": "Forbidden Lands: bane",
+      "FblCondition": "Forbidden Lands: actor condition changed",
+      "FblCritical": "Forbidden Lands: critical injury",
+      "FblDamage": "Forbidden Lands: damage",
+      "FblPush": "Forbidden Lands: push",
+      "FblSpell": "Forbidden Lands: spell or magical mishap",
+      "Manual": "Manual only",
+      "RegionEnter": "Enter region",
+      "RegionExit": "Exit region",
+      "SceneReady": "Scene ready",
+      "TokenApproach": "Approach otherworldly token",
+      "TokenMoved": "Token moved",
+      "TurnStart": "Turn start"
+    }
+  }
+}
