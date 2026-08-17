@@ -12,7 +12,7 @@ const manifest=JSON.parse(readFileSync(join(root,"module.json"),"utf8"));
 const packageJson=JSON.parse(readFileSync(join(root,"package.json"),"utf8"));
 const constantsSource=readFileSync(join(root,"scripts/constants.js"),"utf8");
 assert.equal(manifest.id,"otherworldly-visions");
-assert.equal(manifest.version,"1.0.7");
+assert.equal(manifest.version,"1.0.9");
 assert.equal(packageJson.version,manifest.version,"package.json version must match module.json");
 assert.equal(constantsSource.match(/MODULE_VERSION\s*=\s*["']([^"']+)["']/)?.[1],manifest.version,"API version must match module.json");
 for(const path of [...manifest.esmodules,...manifest.styles,...manifest.languages.map(row=>row.path)])assert.ok(statSync(join(root,path)).isFile(),`Missing manifest path: ${path}`);

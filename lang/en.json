@@ -82,7 +82,10 @@
       "DeleteSetBody": "Delete “{name}” and remove its actor references?",
       "DeleteSetTitle": "Delete vision set?",
       "RestoreBody": "Current module data and flags will be replaced. Foundry will reload after restoration.",
-      "RestoreTitle": "Restore migration backup?"
+      "RestoreTitle": "Restore migration backup?",
+      "DiscardChangesTitle": "Discard unsaved changes?",
+      "DiscardChangesBody": "“{name}” has unsaved changes. Continue without saving them?",
+      "DiscardEditorChangesBody": "This editor has unsaved changes. Close it without saving?"
     },
     "Diagnostics": {
       "BackupAt": "Migration backup",
@@ -192,7 +195,8 @@
       "TokenSaved": "Saved token “{name}”.",
       "VisibilityPatchUnavailable": "Token visibility could not be patched. Enable libWrapper or the direct fallback setting.",
       "VisibilityRefreshed": "Visibility recalculated.",
-      "ActionFailed": "Action \"{action}\" failed: {error}"
+      "ActionFailed": "Action \"{action}\" failed: {error}",
+      "RegionPatchUnavailable": "Region enter/exit triggers could not be attached. Enable libWrapper or the direct compatibility fallback and reload Foundry."
     },
     "Operator": {
       "Contains": "Contains",
@@ -284,8 +288,8 @@
         "Name": "Debug logging"
       },
       "DirectFallback": {
-        "Hint": "Use a carefully restored direct getter patch when libWrapper is not active. Requires reload.",
-        "Name": "Allow direct Token visibility fallback"
+        "Hint": "Use carefully restored direct compatibility patches when libWrapper is not active. Requires reload.",
+        "Name": "Allow direct compatibility fallback"
       },
       "EmergencyMute": {
         "Hint": "Immediately stop and suppress audio-only cues.",

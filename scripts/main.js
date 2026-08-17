@@ -14,12 +14,12 @@ import { visibilityService } from "./visibility/visibility-service.js";
 
 function registerSettings(){
   const register=(key,data)=>game.settings.register(MODULE_ID,key,data);
-  register(SETTINGS.STATE,{scope:"world",config:false,type:Object,default:{schemaVersion:SCHEMA_VERSION,revision:0,sets:{}},onChange:()=>{scheduler.requestReconcile(50);refreshManager();}});
+  register(SETTINGS.STATE,{scope:"world",config:false,type:Object,default:{schemaVersion:SCHEMA_VERSION,revision:0,sets:{}},onChange:value=>{repository.updateStateCache(value);scheduler.requestReconcile(50);refreshManager(null,{invalidateStats:true});}});
   register(SETTINGS.LEGACY_VISION_SETS,{scope:"world",config:false,type:Object,default:{}});
   register(SETTINGS.FLASH_ENABLED,{name:"OV.Settings.FlashEnabled.Name",hint:"OV.Settings.FlashEnabled.Hint",scope:"world",config:true,restricted:true,type:Boolean,default:true,onChange:()=>scheduler.requestReconcile(0)});
   register(SETTINGS.DEBUG,{name:"OV.Settings.Debug.Name",hint:"OV.Settings.Debug.Hint",scope:"world",config:true,restricted:true,type:Boolean,default:false});
   register(SETTINGS.COMMAND,{scope:"world",config:false,type:Object,default:{},onChange:value=>void commandBus.receive(value)});
-  register(SETTINGS.SESSION_LOG,{scope:"world",config:false,type:Array,default:[]});
+  register(SETTINGS.SESSION_LOG,{scope:"world",config:false,type:Array,default:[],onChange:()=>refreshManager(["diagnostics"])});
   register(SETTINGS.MIGRATION_BACKUP,{scope:"world",config:false,type:Object,default:{}});
   register(SETTINGS.MIGRATION_COMPLETE,{scope:"world",config:false,type:Boolean,default:false});
   register(SETTINGS.MACRO_UUID,{scope:"world",config:false,type:String,default:""});
@@ -90,13 +90,12 @@ export function addSceneControlButton(controls){
     order,
     button:true,
     visible:true,
-    onClick:()=>openManager(),
     onChange:()=>openManager()
   };
   insertSceneControlTool(group,tool);
 }
 function addTokenHudButton(app,html,data){
-  if(!game.user?.isGM)return;const root=html instanceof HTMLElement?html:html?.[0];if(!root)return;const token=app.object??canvas?.tokens?.get?.(data?._id),document=token?.document??canvas?.scene?.tokens?.get?.(data?._id);if(!document)return;const flag=repository.getOtherworldly(document),column=root.querySelector(".col.right")??root.querySelector(".right")??root;const button=globalThis.document.createElement("div");button.className=`control-icon ov-token-hud ${flag.enabled?"active":""}`;button.title=game.i18n.localize(flag.enabled?"OV.TokenHud.Enabled":"OV.TokenHud.Disabled");button.innerHTML=`<i class="fa-solid ${flag.enabled?"fa-eye":"fa-eye-slash"}"></i>`;button.addEventListener("click",async event=>{event.preventDefault();event.stopPropagation();await repository.setOtherworldly(document,{enabled:!repository.getOtherworldly(document).enabled});visibilityService.refreshToken(document.object);app.render(true);refreshManager();});button.addEventListener("contextmenu",event=>{event.preventDefault();openTokenEditor(document);});column.appendChild(button);
+  if(!game.user?.isGM)return;const root=html instanceof HTMLElement?html:html?.[0];if(!root)return;const token=app.object??canvas?.tokens?.get?.(data?._id),document=token?.document??canvas?.scene?.tokens?.get?.(data?._id);if(!document)return;const flag=repository.getOtherworldly(document),column=root.querySelector(".col.right")??root.querySelector(".right")??root;const button=globalThis.document.createElement("div");button.className=`control-icon ov-token-hud ${flag.enabled?"active":""}`;button.title=game.i18n.localize(flag.enabled?"OV.TokenHud.Enabled":"OV.TokenHud.Disabled");button.innerHTML=`<i class="fa-solid ${flag.enabled?"fa-eye":"fa-eye-slash"}"></i>`;button.addEventListener("click",async event=>{event.preventDefault();event.stopPropagation();await repository.setOtherworldly(document,{enabled:!repository.getOtherworldly(document).enabled});app.render(true);});button.addEventListener("contextmenu",event=>{event.preventDefault();openTokenEditor(document);});column.appendChild(button);
 }
 function isApplicationV2(app){
   const ApplicationV2=globalThis.foundry?.applications?.api?.ApplicationV2;
@@ -167,44 +166,66 @@ function addActorSheetFallback(app,html){
   const close=header.querySelector?.(".window-close, [data-action='close']");
   if(close)close.before(button);else header.appendChild(button);
 }
-function hideCombatRows(app,html){if(game.user?.isGM&&!visibilityService.previewUserId)return;const root=html instanceof HTMLElement?html:html?.[0];if(!root)return;for(const combatant of game.combat?.combatants??[]){const token=combatant.token;if(!token||!repository.getOtherworldly(token).enabled)continue;const visible=visibilityService.evaluate(token).canSee;for(const row of root.querySelectorAll(`[data-combatant-id="${combatant.id}"], [data-entry-id="${combatant.id}"]`))row.classList.toggle("ov-combatant-hidden",!visible&&repository.getOtherworldly(token).hideCombatant);}}
+function hideCombatRows(app,html){if(game.user?.isGM&&!visibilityService.previewUserId)return;const root=html instanceof HTMLElement?html:html?.[0];if(!root)return;for(const combatant of game.combat?.combatants??[]){const token=combatant.token;if(!token||!repository.isOtherworldlyEnabled(token))continue;const data=repository.getOtherworldly(token),visible=visibilityService.evaluate(token).canSee;for(const row of root.querySelectorAll(`[data-combatant-id="${combatant.id}"], [data-entry-id="${combatant.id}"]`))row.classList.toggle("ov-combatant-hidden",!visible&&data.hideCombatant);}}
 function refreshToken(document){const token=document?.object;if(token)visibilityService.refreshToken(token);}
 
-let sessionLogChain=Promise.resolve();
 function appendLocalCueLog(cue,result){
-  if(!game.user?.isGM)return;
-  sessionLogChain=sessionLogChain.then(async()=>{
-    const current=game.settings.get(MODULE_ID,SETTINGS.SESSION_LOG)??[];
-    const row={at:new Date().toISOString(),direction:"local",id:cue?.id??null,type:"cueResult",issuerId:game.user.id,recipients:[game.user.id],setUuid:cue?.setUuid??null,status:result?.status??"unknown",source:cue?.source??null};
-    await game.settings.set(MODULE_ID,SETTINGS.SESSION_LOG,[row,...current].slice(0,200));
-  }).catch(error=>warn("Local cue journal update failed",error));
+  if(!game.user?.isGM)return;void commandBus.appendSessionLog({direction:"local",id:cue?.id??null,type:"cueResult",issuerId:game.user.id,recipients:[game.user.id],setUuid:cue?.setUuid??null,status:result?.status??"unknown",source:cue?.source??null});
 }
+function topChanged(changes,key){return Boolean(changes&&(Object.hasOwn(changes,key)||Object.keys(changes).some(path=>path.startsWith(`${key}.`))));}
+function moduleFlagChanged(changes,flag){
+  if(!changes)return false;const prefix=`flags.${MODULE_ID}.${flag}`;if(Object.keys(changes).some(path=>path===prefix||path.startsWith(`${prefix}.`)||path===`flags.${MODULE_ID}.-=${flag}`))return true;
+  const scoped=changes.flags?.[MODULE_ID];return Boolean(scoped&&typeof scoped==="object"&&(Object.hasOwn(scoped,flag)||Object.hasOwn(scoped,`-=${flag}`)));
+}
+function clientStatusChanged(changes){return moduleFlagChanged(changes,FLAGS.CLIENT_STATUS);}
+function currentViewerOwns(document){const user=visibilityService.viewer;if(!document?.actor||!user||user.isGM&&!visibilityService.previewUserId)return false;return Boolean(document.actor.testUserPermission?.(user,"OWNER"));}
 
 Hooks.once("init",()=>{registerSettings();registerKeybindings();triggerService.registerHooks();log(`Initializing ${MODULE_ID} ${MODULE_VERSION}`);});
 Hooks.once("ready",async()=>{
   await migrateIfNeeded();
   const api=createApi(),module=game.modules.get(MODULE_ID);if(module)module.api=api;game.otherworldlyVisions=api;Hooks.callAll(`${MODULE_ID}.apiReady`,api);
   const mode=visibilityService.patchTokenVisibility();if(["unavailable","failed"].includes(mode))ui.notifications?.warn?.(game.i18n.localize("OV.Notifications.VisibilityPatchUnavailable"));
-  scheduler.requestReconcile(0);document.addEventListener("visibilitychange",()=>scheduler.requestReconcile(0));await commandBus.publishStatus("ready",{safety:true,patchMode:mode});
+  const regionMode=triggerService.initialize();if(["unavailable","failed"].includes(regionMode))ui.notifications?.warn?.(game.i18n.localize("OV.Notifications.RegionPatchUnavailable"));
+  scheduler.requestReconcile(0);document.addEventListener("visibilitychange",()=>scheduler.requestReconcile(0));await commandBus.publishStatus("ready",{safety:true,patchMode:mode,regionPatchMode:regionMode});
 });
-Hooks.on("canvasReady",()=>{visibilityService.markSceneReady();visibilityService.profileCache.invalidate();tokenEffects.clear();visibilityService.refreshAll();scheduler.requestReconcile(100);});
-Hooks.on("drawToken",token=>tokenEffects.reconcile(token));
+Hooks.on("canvasReady",()=>{visibilityService.profileCache.invalidate();tokenEffects.clear();visibilityService.markSceneReady();visibilityService.refreshAll();scheduler.requestReconcile(100);refreshManager(["tokens","director"],{invalidateStats:true});});
+Hooks.on("drawToken",token=>{if(repository.isOtherworldlyEnabled(token.document)){visibilityService.noteTokenDataChanged(token.document);tokenEffects.reconcile(token);}});
 Hooks.on(`${MODULE_ID}.visibilityChanged`,(token,evaluation)=>tokenEffects.reconcile(token,evaluation));
-Hooks.on("refreshToken",token=>tokenEffects.reconcile(token));
+Hooks.on("refreshToken",token=>{if(visibilityService.consumePendingCoreRefresh(token.document))return;if(repository.isOtherworldlyEnabled(token.document)||tokenEffects.hasState(token.document))tokenEffects.reconcile(token);});
 Hooks.on("destroyToken",token=>{visibilityService.removeToken(token.document);tokenEffects.remove(token.document);});
-Hooks.on("createToken",document=>{refreshToken(document);refreshManager();});
-Hooks.on("updateToken",(document,changes)=>{refreshToken(document);if(["x","y","elevation","actorId"].some(key=>Object.hasOwn(changes,key))){visibilityService.profileCache.invalidate();visibilityService.refreshAllDebounced();}refreshManager();});
-Hooks.on("deleteToken",document=>{visibilityService.removeToken(document);tokenEffects.remove(document);refreshManager();});
-Hooks.on("updateActor",()=>{visibilityService.profileCache.invalidate();scheduler.requestReconcile(50);visibilityService.refreshAllDebounced();refreshEditors();refreshManager();});
-Hooks.on("updateUser",()=>{visibilityService.profileCache.invalidate();scheduler.requestReconcile(50);visibilityService.refreshAllDebounced();refreshManager();});
-Hooks.on("updateScene",()=>{visibilityService.profileCache.invalidate();visibilityService.refreshAllDebounced();});
-Hooks.on(`${MODULE_ID}.afterCue`,(cue,result)=>{appendLocalCueLog(cue,result);if(result?.status==="shown")visibilityService.markCueSeen(cue);visibilityService.refreshAllDebounced();void commandBus.publishStatus("ready",{lastCueAt:Date.now(),lastCueStatus:result?.status,lastCueSetUuid:cue?.setUuid??null});});
+Hooks.on("createToken",document=>{const enabled=repository.isOtherworldlyEnabled(document),viewer=currentViewerOwns(document);visibilityService.noteTokenDataChanged(document);if(enabled)refreshToken(document);if(viewer)visibilityService.refreshAllDebounced();if(enabled||document.object?.controlled)refreshManager(enabled?["tokens","director"]:["tokens"],{invalidateStats:enabled});});
+Hooks.on("updateToken",(document,changes)=>{
+  const flagChanged=moduleFlagChanged(changes,FLAGS.OTHERWORLDLY),moved=["x","y","elevation"].some(key=>Object.hasOwn(changes,key)),actorChanged=topChanged(changes,"actorId"),displayChanged=topChanged(changes,"name")||topChanged(changes,"texture");
+  if(flagChanged){visibilityService.noteTokenDataChanged(document);refreshToken(document);refreshEditors({tokenDocument:document});refreshManager(["tokens","director"],{invalidateStats:true});}
+  else if((moved||actorChanged)&&repository.isOtherworldlyEnabled(document))refreshToken(document);
+  if((moved||actorChanged)&&visibilityService.isViewerToken(document))visibilityService.refreshAllDebounced();
+  if(actorChanged)visibilityService.refreshAllDebounced();
+  if(displayChanged&&!flagChanged&&repository.isOtherworldlyEnabled(document))refreshManager(["tokens"]);
+});
+Hooks.on("deleteToken",document=>{const wasOtherworldly=repository.isOtherworldlyEnabled(document)||tokenEffects.hasState(document),wasViewer=visibilityService.isViewerToken(document)||currentViewerOwns(document);visibilityService.removeToken(document);tokenEffects.remove(document);if(wasViewer)visibilityService.refreshAllDebounced();if(wasOtherworldly)refreshManager(["tokens","director"],{invalidateStats:true});});
+Hooks.on("updateActor",(actor,changes)=>{
+  const touchedChanged=moduleFlagChanged(changes,FLAGS.TOUCHED),ownershipChanged=topChanged(changes,"ownership"),systemChanged=topChanged(changes,"system"),identityChanged=topChanged(changes,"name")||topChanged(changes,"img"),wasViewerActor=visibilityService.isViewerActor(actor);
+  if(touchedChanged)repository.invalidateTouched(actor);
+  if(ownershipChanged){visibilityService.profileCache.invalidate();if(!game.user?.isGM||visibilityService.previewUserId){scheduler.requestReconcile(50);visibilityService.refreshAllDebounced();}}
+  else if(touchedChanged&&wasViewerActor){visibilityService.profileCache.invalidate();scheduler.requestReconcile(50);visibilityService.refreshAllDebounced();}
+  else if(systemChanged&&wasViewerActor&&visibilityService.usesConditionType("actorProperty"))visibilityService.refreshAllDebounced();
+  if(touchedChanged||identityChanged||systemChanged&&visibilityService.usesConditionType("actorProperty"))refreshEditors({actor});
+  if(touchedChanged||identityChanged)refreshManager(["actors","director"],{invalidateStats:touchedChanged});
+});
+Hooks.on("updateUser",(user,changes)=>{
+  if(clientStatusChanged(changes)){refreshManager(["director","diagnostics"]);return;}
+  const profileChanged=topChanged(changes,"character")||topChanged(changes,"role")||topChanged(changes,"permissions")||topChanged(changes,"active"),displayChanged=topChanged(changes,"name"),affectsViewer=user.id===visibilityService.viewer?.id;
+  if(profileChanged&&affectsViewer){visibilityService.profileCache.invalidate(user.id);scheduler.requestReconcile(50);visibilityService.refreshAllDebounced();}
+  if(profileChanged||displayChanged)refreshManager(["director","tokens","diagnostics"]);
+});
+Hooks.on("updateScene",(scene,changes)=>{if(scene.id!==canvas?.scene?.id)return;const darknessChanged=topChanged(changes,"darkness")&&visibilityService.usesConditionType("darkness"),gridChanged=topChanged(changes,"grid")&&(visibilityService.usesConditionType("distance")||visibilityService.usesConditionType("lineOfSight"));if(darknessChanged||gridChanged)visibilityService.refreshAllDebounced();});
+Hooks.on("controlToken",token=>{if(currentViewerOwns(token?.document))visibilityService.refreshAllDebounced();});
+Hooks.on(`${MODULE_ID}.afterCue`,(cue,result)=>{appendLocalCueLog(cue,result);if(result?.status==="shown"){const changed=visibilityService.markCueSeen(cue);if(changed&&visibilityService.usesConditionType("cueShown"))visibilityService.refreshAllDebounced();}if(!String(cue?.source??"").startsWith("gm-remote"))void commandBus.publishStatus("ready",{lastCueAt:Date.now(),lastCueStatus:result?.status,lastCueSetUuid:cue?.setUuid??null});});
 Hooks.on("getSceneControlButtons",addSceneControlButton);
 Hooks.on("renderTokenHUD",addTokenHudButton);
 Hooks.on("getActorSheetHeaderButtons",addActorHeaderButton);
 Hooks.on("renderActorSheet",addActorSheetFallback);
 Hooks.on("renderActorSheetV2",addActorSheetFallback);
 Hooks.on("renderCombatTracker",hideCombatRows);
-Hooks.on("renderCombatTrackerV2",hideCombatRows);
 Hooks.on("closeSettingsConfig",()=>void commandBus.publishStatus("ready",{safety:true}));
-Hooks.on("shutdown",()=>{scheduler.stopAll();director.stopAll("shutdown");tokenEffects.clear();visibilityService.destroy();overlay.destroy();});
+Hooks.on("shutdown",()=>{scheduler.stopAll();director.stopAll("shutdown");triggerService.destroy();tokenEffects.clear();visibilityService.destroy();overlay.destroy();});

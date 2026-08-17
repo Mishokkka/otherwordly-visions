@@ -1,7 +1,7 @@
 import { MODULE_ID, SETTINGS } from "../constants.js";
 import { normalizeCondition } from "../data/schemas.js";
 import { repository } from "../data/repository.js";
-import { applyWindowChrome, clampNumber, randomId, unique, warn } from "../utils.js";
+import { applyWindowChrome, clampNumber, confirmDialog, randomId, unique, warn } from "../utils.js";
 import { commandBus } from "../commands/command-bus.js";
 import { director } from "../visions/director.js";
 import { scheduler } from "../visions/scheduler.js";
@@ -20,9 +20,15 @@ function selectedRecipients(form){ return [...form.querySelectorAll("[name='reci
 
 function withSafeActions(Base){
   return class SafeActionApplication extends Base{
+    constructor(...args){super(...args);this._ovDirty=false;}
+    markDirty(){this._ovDirty=true;}
+    markSaved(){this._ovDirty=false;}
+    hasUnsavedChanges(){return Boolean(this._ovDirty);}
+    async confirmDiscardChanges(){if(!this.hasUnsavedChanges())return true;return confirmDialog(game.i18n.localize("OV.Confirm.DiscardChangesTitle"),game.i18n.localize("OV.Confirm.DiscardEditorChangesBody"));}
     async _onRender(context,options){
       await super._onRender(context,options);
       applyWindowChrome(this);
+      for(const input of this.element?.querySelectorAll?.("input[name], textarea[name], select[name]")??[]){if(input.name==="recipientIds")continue;input.addEventListener("input",()=>this.markDirty());input.addEventListener("change",()=>this.markDirty());}
     }
     async _onClickAction(event,target){
       const action=target?.dataset?.action;
@@ -46,10 +52,9 @@ function conditionRows(conditions=[]){
 }
 
 function actorEligibility(actor){
-  const tokens=canvas?.tokens?.placeables??[];
-  const visible=tokens.filter(token=>visibilityService.evaluateForActor(token.document,actor).canSee).length;
-  const eligible=tokens.filter(token=>repository.getOtherworldly(token.document).enabled&&visibilityService.evaluateForActor(token.document,actor).actorResults?.[0]?.eligible).length;
-  return {visible,eligible,total:tokens.length};
+  const total=(canvas?.tokens?.placeables??[]).length,documents=visibilityService.getOtherworldlyDocuments();let visible=Math.max(0,total-documents.length),eligible=0;
+  for(const document of documents){const result=visibilityService.evaluateForActor(document,actor);if(result.canSee)visible+=1;if(result.actorResults?.[0]?.eligible)eligible+=1;}
+  return {visible,eligible,total};
 }
 
 export function makeActorEditorClass(){
@@ -61,17 +66,17 @@ export function makeActorEditorClass(){
     static PARTS={form:{template:`modules/${MODULE_ID}/templates/actor-editor.hbs`,scrollable:[".ov-actor-workspace"]}};
     async _prepareContext(){
       const touched=repository.getTouched(this.actor), stats=actorEligibility(this.actor);
-      return {actor:this.actor,touched,tagsText:touched.tags.join(", "),revelations:(canvas?.scene?.tokens?.contents??[]).filter(token=>repository.getOtherworldly(token).enabled).map(token=>({uuid:token.uuid,name:token.name,img:token.texture?.src??token.actor?.img,stage:Number(touched.revelations?.[token.uuid]??0),stages:[0,1,2,3,4,5].map(value=>({value,label:game.i18n.format("OV.Stage.Label",{stage:value}),selected:value===Number(touched.revelations?.[token.uuid]??0)}))})),sets:repository.getSets().map(set=>({uuid:set.uuid,name:set.name,checked:touched.visionSetUuids.includes(set.uuid),enabled:set.enabled})),stats,isGM:game.user.isGM};
+      return {actor:this.actor,touched,tagsText:touched.tags.join(", "),revelations:visibilityService.getOtherworldlyDocuments().map(token=>({uuid:token.uuid,name:token.name,img:token.texture?.src??token.actor?.img,stage:Number(touched.revelations?.[token.uuid]??0),stages:[0,1,2,3,4,5].map(value=>({value,label:game.i18n.format("OV.Stage.Label",{stage:value}),selected:value===Number(touched.revelations?.[token.uuid]??0)}))})),sets:repository.getSets().map(set=>({uuid:set.uuid,name:set.name,checked:touched.visionSetUuids.includes(set.uuid),enabled:set.enabled})),stats,isGM:game.user.isGM};
     }
     static async submit(event,form){ return this.saveFrom(form); }
     static async save(event,target){ event.preventDefault(); return this.saveFrom(target.closest("form")??this.element); }
     async saveFrom(form){
       const revelations={...repository.getTouched(this.actor).revelations};for(const row of form.querySelectorAll("[data-revelation-token]")){const stage=Number(value(row,"revelationStage",0));if(stage>0)revelations[row.dataset.revelationToken]=stage;else delete revelations[row.dataset.revelationToken];}await repository.setTouched(this.actor,{enabled:bool(form,"enabled"),rank:value(form,"rank",1),tags:unique(value(form,"tags")),visionSetUuids:checkedValues(form,"visionSetUuids"),revelations});
-      visibilityService.profileCache.invalidate(); scheduler.requestReconcile(0); visibilityService.refreshAllDebounced(); notify("info","OV.Notifications.ActorSaved",{name:this.actor.name}); this.render();
+      this.markSaved(); notify("info","OV.Notifications.ActorSaved",{name:this.actor.name}); this.render();
     }
     static async test(event,target){ const form=target.closest("form")??this.element; const setUuid=checkedValues(form,"visionSetUuids")[0]; if(!setUuid)return notify("warn","OV.Notifications.NoSetSelected"); await director.enqueueSet(setUuid,{source:"actor-editor-test",forced:true,conflict:"replace-lower"}); }
     static closeAction(){ return this.close(); }
-    async close(options={}){ actorEditors.delete(this.actor.id); return super.close(options); }
+    async close(options={}){ if(!await this.confirmDiscardChanges())return this; actorEditors.delete(this.actor.id); return super.close(options); }
   };
 }
 
@@ -92,12 +97,12 @@ export function makeTokenEditorClass(){
     }
     static async submit(event,form){return this.saveFrom(form);}
     static async save(event,target){event.preventDefault();return this.saveFrom(target.closest("form")??this.element);}
-    async saveFrom(form){ await repository.setOtherworldly(this.tokenDocument,this.collect(form)); visibilityService.profileCache.invalidate(); visibilityService.refreshToken(this.tokenDocument.object); notify("info","OV.Notifications.TokenSaved",{name:this.tokenDocument.name}); this.render(); }
-    static addCondition(event,target){ const form=target.closest("form")??this.element; const list=form.querySelector("[data-conditions]"); if(!list)return; const row=document.createElement("div"); row.className="ov-condition-row ov-inline-editor"; row.dataset.conditionId=randomId(10); row.innerHTML=`<label><input type="checkbox" name="conditionEnabled" checked> ${game.i18n.localize("OV.Common.Enabled")}</label><select name="conditionType"><option value="scene">${game.i18n.localize("OV.Condition.Scene")}</option><option value="targetRegion">${game.i18n.localize("OV.Condition.TargetRegion")}</option><option value="viewerRegion">${game.i18n.localize("OV.Condition.ViewerRegion")}</option><option value="targetElevation">${game.i18n.localize("OV.Condition.TargetElevation")}</option><option value="viewerElevation">${game.i18n.localize("OV.Condition.ViewerElevation")}</option><option value="actorProperty">${game.i18n.localize("OV.Condition.ActorProperty")}</option><option value="user">${game.i18n.localize("OV.Condition.User")}</option><option value="timeOnScene">${game.i18n.localize("OV.Condition.TimeOnScene")}</option><option value="cueShown">${game.i18n.localize("OV.Condition.CueShown")}</option></select><select name="conditionOperator"><option value="in">${game.i18n.localize("OV.Operator.In")}</option><option value="notIn">${game.i18n.localize("OV.Operator.NotIn")}</option><option value="equals">${game.i18n.localize("OV.Operator.Equals")}</option><option value="notEquals">${game.i18n.localize("OV.Operator.NotEquals")}</option><option value="greater">${game.i18n.localize("OV.Operator.Greater")}</option><option value="greaterOrEqual">${game.i18n.localize("OV.Operator.GreaterOrEqual")}</option><option value="less">${game.i18n.localize("OV.Operator.Less")}</option><option value="lessOrEqual">${game.i18n.localize("OV.Operator.LessOrEqual")}</option><option value="contains">${game.i18n.localize("OV.Operator.Contains")}</option></select><input name="conditionPath" placeholder="system.path"><input name="conditionValue" placeholder="id, value"><button type="button" data-action="removeCondition" class="icon"><i class="fa-solid fa-trash"></i></button>`; list.appendChild(row); }
-    static removeCondition(event,target){ target.closest("[data-condition-id]")?.remove(); }
+    async saveFrom(form){ await repository.setOtherworldly(this.tokenDocument,this.collect(form)); this.markSaved(); notify("info","OV.Notifications.TokenSaved",{name:this.tokenDocument.name}); this.render(); }
+    static addCondition(event,target){ const form=target.closest("form")??this.element; const list=form.querySelector("[data-conditions]"); if(!list)return; const row=document.createElement("div"); row.className="ov-condition-row ov-inline-editor"; row.dataset.conditionId=randomId(10); row.innerHTML=`<label><input type="checkbox" name="conditionEnabled" checked> ${game.i18n.localize("OV.Common.Enabled")}</label><select name="conditionType"><option value="scene">${game.i18n.localize("OV.Condition.Scene")}</option><option value="targetRegion">${game.i18n.localize("OV.Condition.TargetRegion")}</option><option value="viewerRegion">${game.i18n.localize("OV.Condition.ViewerRegion")}</option><option value="targetElevation">${game.i18n.localize("OV.Condition.TargetElevation")}</option><option value="viewerElevation">${game.i18n.localize("OV.Condition.ViewerElevation")}</option><option value="actorProperty">${game.i18n.localize("OV.Condition.ActorProperty")}</option><option value="user">${game.i18n.localize("OV.Condition.User")}</option><option value="timeOnScene">${game.i18n.localize("OV.Condition.TimeOnScene")}</option><option value="cueShown">${game.i18n.localize("OV.Condition.CueShown")}</option></select><select name="conditionOperator"><option value="in">${game.i18n.localize("OV.Operator.In")}</option><option value="notIn">${game.i18n.localize("OV.Operator.NotIn")}</option><option value="equals">${game.i18n.localize("OV.Operator.Equals")}</option><option value="notEquals">${game.i18n.localize("OV.Operator.NotEquals")}</option><option value="greater">${game.i18n.localize("OV.Operator.Greater")}</option><option value="greaterOrEqual">${game.i18n.localize("OV.Operator.GreaterOrEqual")}</option><option value="less">${game.i18n.localize("OV.Operator.Less")}</option><option value="lessOrEqual">${game.i18n.localize("OV.Operator.LessOrEqual")}</option><option value="contains">${game.i18n.localize("OV.Operator.Contains")}</option></select><input name="conditionPath" placeholder="system.path"><input name="conditionValue" placeholder="id, value"><button type="button" data-action="removeCondition" class="icon"><i class="fa-solid fa-trash"></i></button>`; list.appendChild(row); this.markDirty(); }
+    static removeCondition(event,target){ const row=target.closest("[data-condition-id]");if(!row)return;row.remove();this.markDirty(); }
     static async manifest(event,target){ const recipients=selectedRecipients(target.closest("form")??this.element); if(recipients.length)await commandBus.dispatchManifest(this.tokenDocument.uuid,2500,recipients); else visibilityService.forceManifest(this.tokenDocument,2500); }
     static closeAction(){return this.close();}
-    async close(options={}){tokenEditors.delete(this.tokenDocument.uuid);return super.close(options);}
+    async close(options={}){if(!await this.confirmDiscardChanges())return this;tokenEditors.delete(this.tokenDocument.uuid);return super.close(options);}
   };
 }
 
@@ -110,13 +115,17 @@ export function makeSafetyAppClass(){
     async _prepareContext(){return{enabled:game.settings.get(MODULE_ID,SETTINGS.PLAYER_FLASH),volumeCap:game.settings.get(MODULE_ID,SETTINGS.VOLUME_CAP),opacityCap:game.settings.get(MODULE_ID,SETTINGS.OPACITY_CAP),reducedMotion:game.settings.get(MODULE_ID,SETTINGS.REDUCED_MOTION),photosensitive:game.settings.get(MODULE_ID,SETTINGS.PHOTOSENSITIVE),blockedTags:(game.settings.get(MODULE_ID,SETTINGS.BLOCKED_SAFETY_TAGS)??[]).join(", "),allowHidden:game.settings.get(MODULE_ID,SETTINGS.ALLOW_HIDDEN),minimumInterval:game.settings.get(MODULE_ID,SETTINGS.MIN_INTERVAL),emergencyMute:game.settings.get(MODULE_ID,SETTINGS.EMERGENCY_MUTE)};}
     static async submit(event,form){return this.saveFrom(form);}
     static async save(event,target){event.preventDefault();return this.saveFrom(target.closest("form")??this.element);}
-    async saveFrom(form){for(const [key,val] of [[SETTINGS.PLAYER_FLASH,bool(form,"enabled")],[SETTINGS.VOLUME_CAP,clampNumber(value(form,"volumeCap"),0,1,1)],[SETTINGS.OPACITY_CAP,clampNumber(value(form,"opacityCap"),.05,1,1)],[SETTINGS.REDUCED_MOTION,bool(form,"reducedMotion")],[SETTINGS.PHOTOSENSITIVE,bool(form,"photosensitive")],[SETTINGS.BLOCKED_SAFETY_TAGS,unique(value(form,"blockedTags"))],[SETTINGS.ALLOW_HIDDEN,bool(form,"allowHidden")],[SETTINGS.MIN_INTERVAL,clampNumber(value(form,"minimumInterval"),0,3600,0)]])await game.settings.set(MODULE_ID,key,val);scheduler.requestReconcile(0);await commandBus.publishStatus("ready",{safety:true});notify("info","OV.Notifications.SafetySaved");this.render();}
+    async saveFrom(form){for(const [key,val] of [[SETTINGS.PLAYER_FLASH,bool(form,"enabled")],[SETTINGS.VOLUME_CAP,clampNumber(value(form,"volumeCap"),0,1,1)],[SETTINGS.OPACITY_CAP,clampNumber(value(form,"opacityCap"),.05,1,1)],[SETTINGS.REDUCED_MOTION,bool(form,"reducedMotion")],[SETTINGS.PHOTOSENSITIVE,bool(form,"photosensitive")],[SETTINGS.BLOCKED_SAFETY_TAGS,unique(value(form,"blockedTags"))],[SETTINGS.ALLOW_HIDDEN,bool(form,"allowHidden")],[SETTINGS.MIN_INTERVAL,clampNumber(value(form,"minimumInterval"),0,3600,0)]]){const current=game.settings.get(MODULE_ID,key);if(JSON.stringify(current)!==JSON.stringify(val))await game.settings.set(MODULE_ID,key,val);}scheduler.requestReconcile(0);await commandBus.publishStatus("ready",{safety:true});this.markSaved();notify("info","OV.Notifications.SafetySaved");this.render();}
     static async test(){await director.enqueuePayload({image:"",audio:"",caption:game.i18n.localize("OV.Safety.TestCaption"),duration:900,opacity:.7,safety:[]},{source:"safety-test",conflict:"replace",priority:100});}
-    static async emergency(){const next=!game.settings.get(MODULE_ID,SETTINGS.EMERGENCY_MUTE);await game.settings.set(MODULE_ID,SETTINGS.EMERGENCY_MUTE,next);director.stopAll("emergency-mute");this.render();}
+    static async emergency(){const next=!game.settings.get(MODULE_ID,SETTINGS.EMERGENCY_MUTE);await game.settings.set(MODULE_ID,SETTINGS.EMERGENCY_MUTE,next);director.stopAll("emergency-mute");if(this.hasUnsavedChanges()){const status=this.element?.querySelector?.(".ov-emergency"),label=status?.querySelector?.("span");status?.classList?.toggle?.("is-active",next);if(label)label.textContent=game.i18n.localize(next?"OV.Common.Enabled":"OV.Common.Disabled");}else this.render();}
+    async close(options={}){if(!await this.confirmDiscardChanges())return this;if(safetyApp===this)safetyApp=null;return super.close(options);}
   };
 }
 
-export function openActorEditor(actor){if(!game.user?.isGM)return ui.notifications?.warn?.(game.i18n.localize("OV.Notifications.GMOnly"));if(!actor)return;let app=actorEditors.get(actor.id);if(!app){const Cls=makeActorEditorClass();app=new Cls(actor);actorEditors.set(actor.id,app);}return app.render(true);}
-export function openTokenEditor(tokenOrDocument){if(!game.user?.isGM)return ui.notifications?.warn?.(game.i18n.localize("OV.Notifications.GMOnly"));const document=tokenOrDocument?.document??tokenOrDocument;if(!document)return;let app=tokenEditors.get(document.uuid);if(!app){const Cls=makeTokenEditorClass();app=new Cls(document);tokenEditors.set(document.uuid,app);}return app.render(true);}
-export function openSafety(){if(!safetyApp){const Cls=makeSafetyAppClass();safetyApp=new Cls();}return safetyApp.render(true);}
-export function refreshEditors(){for(const app of [...actorEditors.values(),...tokenEditors.values()])if(app.rendered)app.render();if(safetyApp?.rendered)safetyApp.render();}
+export function openActorEditor(actor){if(!game.user?.isGM)return ui.notifications?.warn?.(game.i18n.localize("OV.Notifications.GMOnly"));if(!actor)return;let app=actorEditors.get(actor.id);if(!app){const Cls=makeActorEditorClass();app=new Cls(actor);actorEditors.set(actor.id,app);}if(app.rendered&&app.hasUnsavedChanges?.()){app.bringToFront?.();return app;}return app.render(true);}
+export function openTokenEditor(tokenOrDocument){if(!game.user?.isGM)return ui.notifications?.warn?.(game.i18n.localize("OV.Notifications.GMOnly"));const document=tokenOrDocument?.document??tokenOrDocument;if(!document)return;let app=tokenEditors.get(document.uuid);if(!app){const Cls=makeTokenEditorClass();app=new Cls(document);tokenEditors.set(document.uuid,app);}if(app.rendered&&app.hasUnsavedChanges?.()){app.bringToFront?.();return app;}return app.render(true);}
+export function openSafety(){if(!safetyApp){const Cls=makeSafetyAppClass();safetyApp=new Cls();}if(safetyApp.rendered&&safetyApp.hasUnsavedChanges?.()){safetyApp.bringToFront?.();return safetyApp;}return safetyApp.render(true);}
+export function refreshEditors({actor=null,tokenDocument=null,safety=false}={}){
+  const apps=[];if(actor)apps.push(actorEditors.get(actor.id));else if(tokenDocument)apps.push(tokenEditors.get(tokenDocument.uuid));else apps.push(...actorEditors.values(),...tokenEditors.values());
+  for(const app of apps)if(app?.rendered&&!app.hasUnsavedChanges?.())app.render();if((safety||!actor&&!tokenDocument)&&safetyApp?.rendered&&!safetyApp.hasUnsavedChanges?.())safetyApp.render();
+}

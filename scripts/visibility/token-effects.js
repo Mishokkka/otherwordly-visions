@@ -7,11 +7,11 @@ export class TokenEffects {
   constructor(){ this.states=new Map(); this.sceneLayerEnabled=false; }
   signature(data,result){
     let cap=1; try{ cap=Number(game.settings.get(MODULE_ID,SETTINGS.OPACITY_CAP)??1); }catch(_error){}
-    return JSON.stringify({enabled:data.enabled,mode:data.visualEffect,intensity:data.effectIntensity,opacity:data.viewerOpacity,stage:result.stage,canSee:result.canSee,layer:this.sceneLayerEnabled,cap});
+    return JSON.stringify({enabled:data.enabled,mode:data.visualEffect,intensity:data.effectIntensity,opacity:data.viewerOpacity,stage:result.stage,canSee:result.canSee,fullGhost:data.fullGhost,suppressLight:data.suppressLight,suppressVision:data.suppressVision,layer:this.sceneLayerEnabled,cap});
   }
   reconcile(token,evaluation=null){
     if(!token?.document)return;
-    const key=documentKey(token.document), data=repository.getOtherworldly(token.document), result=evaluation??visibilityService.evaluate(token.document), signature=this.signature(data,result), existing=this.states.get(key);
+    const key=documentKey(token.document), result=evaluation??visibilityService.evaluate(token.document), data=result?.data??repository.getOtherworldly(token.document), signature=this.signature(data,result), existing=this.states.get(key);
     if(existing?.signature===signature)return;
     this.remove(token.document);
     if(!data.enabled)return;
@@ -60,8 +60,9 @@ export class TokenEffects {
     }
     this.states.delete(key);
   }
+  hasState(tokenOrDocument){const document=tokenOrDocument?.document??tokenOrDocument;return Boolean(document&&this.states.has(documentKey(document)));}
   clear(){ for(const token of canvas?.tokens?.placeables??[])this.remove(token.document); this.states.clear(); }
-  refreshAll(){ for(const token of canvas?.tokens?.placeables??[])this.reconcile(token); }
+  refreshAll(){ for(const document of visibilityService.getOtherworldlyDocuments()){const token=document.object??canvas?.tokens?.get?.(document.id);if(token)this.reconcile(token);} }
   setSceneLayerEnabled(enabled){ this.sceneLayerEnabled=Boolean(enabled); this.refreshAll(); }
   snapshot(){ return{effects:this.states.size,sceneLayerEnabled:this.sceneLayerEnabled}; }
 }
