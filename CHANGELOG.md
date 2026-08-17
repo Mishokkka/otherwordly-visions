@@ -1,5 +1,36 @@
 # Changelog
 
+## 1.0.9
+
+- Reworked runtime invalidation so ordinary Actor, User, Token, and Scene updates no longer fan out into unconditional scheduler, visibility, editor, and Manager work.
+- Indexed active Otherworldly tokens and changed full visibility refreshes to touch only module-managed tokens; ordinary scene tokens are skipped entirely.
+- Removed unconditional `refreshMesh` and legacy `Token.refresh()` from the visibility path, and suppress the duplicate core `refreshToken` reconciliation caused by our own render flags.
+- Added fast raw-flag checks and normalized caches for world state, Touched Actor data, and Otherworldly Token data.
+- Made viewer checks ownership-first and limited Actor/User invalidation to the current viewer or preview user where possible.
+- Added explicit `controlToken` invalidation and condition-aware Scene/Actor refreshes for distance, LOS, darkness, and actor-property dependencies.
+- Reworked Manager updates around coalesced, tab-aware rendering; heavy Actor, Token, orphan, playlist, and diagnostic context is now built only for the tab that needs it.
+- Fixed the long-session Manager drop-listener accumulation by keeping one stable root listener for the application lifecycle.
+- Debounced full Vision Set form serialization while typing while keeping immediate synchronization for committed field changes and actions.
+- Removed duplicate post-Document refresh/render ownership from Manager, editors, HUD, and public API mutations so Foundry hooks own cross-client follow-up.
+- Indexed trigger types, skipped inactive trigger families, limited proximity scans to indexed Otherworldly targets, and resolves eligible proximity sets once per movement.
+- Reduced command/status churn by deduplicating repeated client statuses, batching session-log writes, unifying local/remote log serialization, and capping retained command errors.
+- Reconciled Stage-3 manifestation timers when a token leaves the stage or timing configuration changes, preventing stale recurring timers.
+- Limited scheduler media prewarm to the nearest upcoming jobs and deduplicated concurrent media loads for the same path.
+- Collapsed Actor editor visibility statistics into one pass over relevant Otherworldly tokens and reused already-computed evaluations in token effects.
+- Added performance-architecture regression tests for targeted visibility refresh, repository caches, proximity trigger fan-out, command batching/status deduplication, and Manager listener lifecycle.
+
+## 1.0.8
+
+- Fixed viewer-token resolution so elevation, distance, line-of-sight, and Region conditions use real placeable Tokens consistently.
+- Restored Region enter/exit triggers for Foundry v13 through a reversible libWrapper/direct compatibility bridge around RegionDocument events.
+- Implemented the advertised Forbidden Lands damage trigger by tracking reductions to actor attributes.
+- Fixed Token Effects reconciliation so changes to full-ghost, light suppression, and vision suppression cannot be skipped by the effect signature cache.
+- Protected unsaved Vision Set and Actor/Token/Safety editor input from destructive external rerenders and accidental close/switch/import actions.
+- Removed implicit remote-command broadcast semantics: remote commands now require at least one explicit recipient.
+- Made legacy migration retries idempotent by reusing current-schema UUIDs, preserving the original migration backup, generating stable legacy UUIDs, and clearing migrated legacy set storage.
+- Removed the deprecated duplicate Scene Control `onClick` handler and the unused `renderCombatTrackerV2` registration for the v13 target.
+- Expanded regression coverage for viewer geometry, Region event bridging, Forbidden Lands damage events, effect signatures, dirty-draft protection, explicit recipients, and migration retries.
+
 ## 1.0.7
 
 - Removed the Otherworldly Visions manager tool from Token Controls.

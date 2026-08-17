@@ -55,3 +55,32 @@ test("manager declares and manually preserves the actual set editor scroll conta
   assert.equal(node.scrollTop,640);
   assert.equal(node.scrollLeft,12);
 });
+
+test("manager asks before discarding a dirty vision-set draft",async()=>{
+  let confirms=0;
+  globalThis.foundry.applications.api.DialogV2={confirm:async()=>{confirms+=1;return false;}};
+  globalThis.game.i18n={format:key=>key,localize:key=>key};
+  const Manager=makeManagerClass();
+  const app=Object.create(Manager.prototype);
+  app.draft={uuid:"set-a",name:"Changed"};
+  app.original={uuid:"set-a",name:"Saved"};
+  app.element=null;
+  const allowed=await app.confirmDiscardDraft();
+  assert.equal(allowed,false);
+  assert.equal(confirms,1);
+});
+
+test("manager keeps exactly one root drop listener across repeated renders",async()=>{
+  const Manager=makeManagerClass();
+  const app=Object.create(Manager.prototype);
+  let adds=0,removes=0;
+  const root={
+    matches(){return false;},closest(){return null;},querySelector(){return null;},querySelectorAll(){return[];},
+    addEventListener(type){if(type==="drop")adds+=1;},removeEventListener(type){if(type==="drop")removes+=1;}
+  };
+  app.element=root;app._dropRoot=null;app._dropHandler=()=>{};app._scrollState=new Map();app._draftSyncTimer=null;
+  await app._onRender({},{});
+  await app._onRender({},{});
+  assert.equal(adds,1);
+  assert.equal(removes,0);
+});

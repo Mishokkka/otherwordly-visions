@@ -81,22 +81,20 @@ async function resolveCandidate(requestedSrc, loader, timeout) {
 }
 
 export class MediaCache {
-  constructor() { this.images = new BoundedCache(180); this.audio = new BoundedCache(120); this.negativeTtlMs = 30000; }
+  constructor() { this.images = new BoundedCache(180); this.audio = new BoundedCache(120); this.imagePending=new Map();this.audioPending=new Map();this.negativeTtlMs = 30000; }
   async prepareImage(src, timeout = 5000) {
     if (!src) return { ok:true, empty:true, src:"" };
     const cached = this.images.get(src);
     if (cached && (cached.ok || Date.now() - cached.at < this.negativeTtlMs)) return cached;
-    const result = await resolveCandidate(src, loadImageCandidate, timeout);
-    this.images.set(src,result);
-    return result;
+    if(this.imagePending.has(src))return this.imagePending.get(src);
+    const pending=resolveCandidate(src,loadImageCandidate,timeout).then(result=>{this.images.set(src,result);return result;}).finally(()=>this.imagePending.delete(src));this.imagePending.set(src,pending);return pending;
   }
   async prepareAudio(src, timeout = 5000) {
     if (!src) return { ok:true, empty:true, src:"" };
     const cached = this.audio.get(src);
     if (cached && (cached.ok || Date.now() - cached.at < this.negativeTtlMs)) return cached;
-    const result = await resolveCandidate(src, loadAudioCandidate, timeout);
-    this.audio.set(src,result);
-    return result;
+    if(this.audioPending.has(src))return this.audioPending.get(src);
+    const pending=resolveCandidate(src,loadAudioCandidate,timeout).then(result=>{this.audio.set(src,result);return result;}).finally(()=>this.audioPending.delete(src));this.audioPending.set(src,pending);return pending;
   }
   async prepare(image, audio, { timeout = 5000 } = {}) {
     const [imageResult,audioResult]=await Promise.all([this.prepareImage(image,timeout),this.prepareAudio(audio,timeout)]);
@@ -125,7 +123,7 @@ export class MediaCache {
       results
     };
   }
-  snapshot() { return { images:this.images.size, audio:this.audio.size, negativeTtlMs:this.negativeTtlMs }; }
+  snapshot() { return { images:this.images.size, audio:this.audio.size, pendingImages:this.imagePending.size,pendingAudio:this.audioPending.size,negativeTtlMs:this.negativeTtlMs }; }
 }
 export const mediaCache = new MediaCache();
 

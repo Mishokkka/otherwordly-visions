@@ -1,5 +1,5 @@
 export const MODULE_ID = "otherworldly-visions";
-export const MODULE_VERSION = "1.0.7";
+export const MODULE_VERSION = "1.0.9";
 export const SCHEMA_VERSION = 2;
 
 export const FLAGS = Object.freeze({

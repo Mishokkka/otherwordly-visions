@@ -30,3 +30,19 @@ test("GM dispatch writes a bounded, expiring command envelope",async()=>{
   assert.deepEqual(envelope.recipients,["p"]);
   assert.ok(envelope.expiresAt>envelope.issuedAt);
 });
+
+test("command bus rejects empty recipient lists and never treats them as broadcast",async()=>{
+  globalThis.Hooks={callAll(){},call(){return true;}};
+  globalThis.canvas={scene:{id:"s",tokens:{contents:[]}}};
+  const values=new Map([[SETTINGS.SESSION_LOG,[]]]);
+  const users=new Map([["gm",{id:"gm",isGM:true}],["p",{id:"p",isGM:false}]]);
+  globalThis.game={user:{id:"gm",isGM:true,async setFlag(){}},users:{get:id=>users.get(id)},settings:{get(_scope,key){return values.get(key);},async set(_scope,key,value){values.set(key,value);return value;}},playlists:new Map()};
+  const { CommandBus }=await import(`../scripts/commands/command-bus.js?empty=${Date.now()}`);
+  const bus=new CommandBus();
+  await assert.rejects(()=>bus.dispatch("stopAll",{},[]),/recipient/i);
+
+  game.user={id:"p",isGM:false,async setFlag(){}};
+  const now=Date.now();
+  await bus.receive({id:"empty",type:"stopAll",issuerId:"gm",recipients:[],issuedAt:now,expiresAt:now+1000,payload:{}});
+  assert.equal(bus.lastCommand,null);
+});
