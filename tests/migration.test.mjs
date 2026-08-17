@@ -71,3 +71,23 @@ test("legacy migration generates stable set UUIDs across restore-style retries",
   const second=await migrate(makeSettings());
   assert.equal(first,second);
 });
+
+test("migration does not mark completion when legacy cleanup fails",async()=>{
+  const settings=new Map([
+    [`${MODULE_ID}.${SETTINGS.STATE}`,{}],
+    [`${MODULE_ID}.${SETTINGS.LEGACY_VISION_SETS}`,{"visions-old":{id:"visions-old",name:"Old visions",images:["visions/old.webp"]}}],
+    [`${MODULE_ID}.${SETTINGS.MIGRATION_COMPLETE}`,false],
+    [`${MODULE_ID}.${SETTINGS.MIGRATION_BACKUP}`,{}]
+  ]);
+  globalThis.game={user:{isGM:true},actors:[],scenes:[],settings:{
+    get:(scope,key)=>settings.get(`${scope}.${key}`),
+    set:async(scope,key,value)=>{
+      if(key===SETTINGS.LEGACY_VISION_SETS&&Object.keys(value??{}).length===0)throw new Error("cleanup failed");
+      settings.set(`${scope}.${key}`,structuredClone(value));return value;
+    }
+  }};
+  const { WorldRepository }=await import(`../scripts/data/repository.js?cleanup-failure=${Date.now()}`);
+  const repo=new WorldRepository();
+  await assert.rejects(()=>repo.migrateLegacyData(),/cleanup failed/);
+  assert.equal(settings.get(`${MODULE_ID}.${SETTINGS.MIGRATION_COMPLETE}`),false);
+});

@@ -2,7 +2,7 @@ import { FLAGS, MODULE_ID, MODULE_VERSION, SCHEMA_VERSION, SETTINGS } from "./co
 import { commandBus } from "./commands/command-bus.js";
 import { repository } from "./data/repository.js";
 import { createApi } from "./api.js";
-import { openActorEditor, openSafety, openTokenEditor, makeSafetyAppClass, refreshEditors } from "./apps/editors.js";
+import { closeEditorsFor, openActorEditor, openSafety, openTokenEditor, makeSafetyAppClass, refreshEditors } from "./apps/editors.js";
 import { makeManagerClass, openManager, refreshManager } from "./apps/manager.js";
 import { triggerService } from "./triggers/trigger-service.js";
 import { log, warn } from "./utils.js";
@@ -95,7 +95,7 @@ export function addSceneControlButton(controls){
   insertSceneControlTool(group,tool);
 }
 function addTokenHudButton(app,html,data){
-  if(!game.user?.isGM)return;const root=html instanceof HTMLElement?html:html?.[0];if(!root)return;const token=app.object??canvas?.tokens?.get?.(data?._id),document=token?.document??canvas?.scene?.tokens?.get?.(data?._id);if(!document)return;const flag=repository.getOtherworldly(document),column=root.querySelector(".col.right")??root.querySelector(".right")??root;const button=globalThis.document.createElement("div");button.className=`control-icon ov-token-hud ${flag.enabled?"active":""}`;button.title=game.i18n.localize(flag.enabled?"OV.TokenHud.Enabled":"OV.TokenHud.Disabled");button.innerHTML=`<i class="fa-solid ${flag.enabled?"fa-eye":"fa-eye-slash"}"></i>`;button.addEventListener("click",async event=>{event.preventDefault();event.stopPropagation();await repository.setOtherworldly(document,{enabled:!repository.getOtherworldly(document).enabled});app.render(true);});button.addEventListener("contextmenu",event=>{event.preventDefault();openTokenEditor(document);});column.appendChild(button);
+  if(!game.user?.isGM)return;const root=html instanceof HTMLElement?html:html?.[0];if(!root)return;const token=app.object??canvas?.tokens?.get?.(data?._id),document=token?.document??canvas?.scene?.tokens?.get?.(data?._id);if(!document)return;const flag=repository.getOtherworldly(document),column=root.querySelector(".col.right")??root.querySelector(".right")??root;const button=globalThis.document.createElement("div");button.className=`control-icon ov-token-hud ${flag.enabled?"active":""}`;button.title=game.i18n.localize(flag.enabled?"OV.TokenHud.Enabled":"OV.TokenHud.Disabled");button.setAttribute("role","button");button.setAttribute("tabindex","0");button.setAttribute("aria-label",button.title);button.innerHTML=`<i class="fa-solid ${flag.enabled?"fa-eye":"fa-eye-slash"}" aria-hidden="true"></i>`;const toggle=async event=>{event.preventDefault();event.stopPropagation();await repository.setOtherworldly(document,{enabled:!repository.getOtherworldly(document).enabled});app.render(true);};button.addEventListener("click",toggle);button.addEventListener("keydown",event=>{if(event.key==="Enter"||event.key===" ")void toggle(event);});button.addEventListener("contextmenu",event=>{event.preventDefault();openTokenEditor(document);});column.appendChild(button);
 }
 function isApplicationV2(app){
   const ApplicationV2=globalThis.foundry?.applications?.api?.ApplicationV2;
@@ -202,7 +202,8 @@ Hooks.on("updateToken",(document,changes)=>{
   if(actorChanged)visibilityService.refreshAllDebounced();
   if(displayChanged&&!flagChanged&&repository.isOtherworldlyEnabled(document))refreshManager(["tokens"]);
 });
-Hooks.on("deleteToken",document=>{const wasOtherworldly=repository.isOtherworldlyEnabled(document)||tokenEffects.hasState(document),wasViewer=visibilityService.isViewerToken(document)||currentViewerOwns(document);visibilityService.removeToken(document);tokenEffects.remove(document);if(wasViewer)visibilityService.refreshAllDebounced();if(wasOtherworldly)refreshManager(["tokens","director"],{invalidateStats:true});});
+Hooks.on("deleteToken",document=>{void closeEditorsFor({tokenDocument:document});const wasOtherworldly=repository.isOtherworldlyEnabled(document)||tokenEffects.hasState(document),wasViewer=visibilityService.isViewerToken(document)||currentViewerOwns(document);visibilityService.removeToken(document);tokenEffects.remove(document);if(wasViewer)visibilityService.refreshAllDebounced();if(wasOtherworldly)refreshManager(["tokens","director"],{invalidateStats:true});});
+Hooks.on("deleteActor",actor=>{void closeEditorsFor({actor});});
 Hooks.on("updateActor",(actor,changes)=>{
   const touchedChanged=moduleFlagChanged(changes,FLAGS.TOUCHED),ownershipChanged=topChanged(changes,"ownership"),systemChanged=topChanged(changes,"system"),identityChanged=topChanged(changes,"name")||topChanged(changes,"img"),wasViewerActor=visibilityService.isViewerActor(actor);
   if(touchedChanged)repository.invalidateTouched(actor);

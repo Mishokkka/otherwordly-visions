@@ -1,5 +1,5 @@
 export const MODULE_ID = "otherworldly-visions";
-export const MODULE_VERSION = "1.0.9";
+export const MODULE_VERSION = "1.0.10";
 export const SCHEMA_VERSION = 2;
 
 export const FLAGS = Object.freeze({
@@ -105,7 +105,7 @@ export const DEFAULT_VISION_SET = Object.freeze({
   uuid: "",
   legacyIds: [],
   slug: "",
-  name: "Новый набор",
+  name: "Vision Set",
   enabled: true,
   safety: [],
   images: [],

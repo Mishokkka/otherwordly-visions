@@ -88,11 +88,6 @@ export function sleep(ms, signal) {
   });
 }
 
-export function escapeHTML(value) {
-  const div = document.createElement("div");
-  div.textContent = String(value ?? "");
-  return div.innerHTML;
-}
 
 export function getProperty(object, path, fallback = undefined) {
   const getter = globalThis.foundry?.utils?.getProperty;

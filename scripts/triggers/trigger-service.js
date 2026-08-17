@@ -26,10 +26,10 @@ export class TriggerService {
   initialize(){for(const adapter of this.adapters)adapter.primeActors?.();return this.patchRegionEvents();}
   patchRegionEvents(){
     if(this.regionPatchMode!=="uninitialized")return this.regionPatchMode;const proto=globalThis.foundry?.documents?.RegionDocument?.prototype;if(!proto||typeof proto._handleEvent!=="function"){this.regionPatchMode="unavailable";return this.regionPatchMode;}
-    const service=this,path="foundry.documents.RegionDocument.prototype._handleEvent";
-    if(game.modules?.get("lib-wrapper")?.active&&globalThis.libWrapper){try{libWrapper.register(MODULE_ID,path,async function(wrapped,event){const result=await wrapped(event);try{void service.handleRegionEvent(event);}catch(error){warn("Region trigger dispatch failed",error);}return result;},"WRAPPER");this.regionWrapperPath=path;this.regionPatchMode="libWrapper";return this.regionPatchMode;}catch(error){warn("libWrapper Region patch failed",error);}}
+    const service=this,path="foundry.documents.RegionDocument.prototype._handleEvent",dispatch=event=>{try{void Promise.resolve(service.handleRegionEvent(event)).catch(error=>warn("Region trigger dispatch failed",error));}catch(error){warn("Region trigger dispatch failed",error);}};
+    if(game.modules?.get("lib-wrapper")?.active&&globalThis.libWrapper){try{libWrapper.register(MODULE_ID,path,async function(wrapped,event){const result=await wrapped(event);dispatch(event);return result;},"WRAPPER");this.regionWrapperPath=path;this.regionPatchMode="libWrapper";return this.regionPatchMode;}catch(error){warn("libWrapper Region patch failed",error);}}
     if(!game.settings.get(MODULE_ID,SETTINGS.DIRECT_FALLBACK)){this.regionPatchMode="unavailable";return this.regionPatchMode;}const descriptor=Object.getOwnPropertyDescriptor(proto,"_handleEvent");if(!descriptor||typeof descriptor.value!=="function"||descriptor.configurable===false){this.regionPatchMode="failed";return this.regionPatchMode;}
-    this.regionDirectPatch={proto,descriptor};Object.defineProperty(proto,"_handleEvent",{...descriptor,value:async function(event){const result=await descriptor.value.call(this,event);try{void service.handleRegionEvent(event);}catch(error){warn("Region trigger dispatch failed",error);}return result;}});this.regionPatchMode="direct-fallback";return this.regionPatchMode;
+    this.regionDirectPatch={proto,descriptor};Object.defineProperty(proto,"_handleEvent",{...descriptor,value:async function(event){const result=await descriptor.value.call(this,event);dispatch(event);return result;}});this.regionPatchMode="direct-fallback";return this.regionPatchMode;
   }
   registerHooks(){
     if(this.registered)return;this.registered=true;

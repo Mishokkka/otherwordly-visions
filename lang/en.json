@@ -65,7 +65,12 @@
       "Test": "Test",
       "Unsaved": "Unsaved changes",
       "Visible": "Visible",
-      "Delete": "Delete"
+      "Delete": "Delete",
+      "Confirm": "Confirm",
+      "Refresh": "Refresh",
+      "MoveUp": "Move up",
+      "MoveDown": "Move down",
+      "ToggleVisibility": "Toggle visibility"
     },
     "Condition": {
       "ActorProperty": "Actor property",
@@ -85,7 +90,8 @@
       "RestoreTitle": "Restore migration backup?",
       "DiscardChangesTitle": "Discard unsaved changes?",
       "DiscardChangesBody": "“{name}” has unsaved changes. Continue without saving them?",
-      "DiscardEditorChangesBody": "This editor has unsaved changes. Close it without saving?"
+      "DiscardEditorChangesBody": "This editor has unsaved changes. Close it without saving?",
+      "ClearSessionLogBody": "Clear the session log? This cannot be undone."
     },
     "Diagnostics": {
       "BackupAt": "Migration backup",

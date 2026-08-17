@@ -1,5 +1,17 @@
 # Changelog
 
+## 1.0.10
+
+- Completed the final audit pass for UX, accessibility, lifecycle cleanup, and Foundry-facing polish.
+- Incorporated all five actionable CodeRabbit findings from PR #1: flattened Forbidden Lands update paths, clean-draft refresh after external state changes, migration completion ordering, async Region dispatch error handling, and immediate stale manifestation cleanup.
+- Added accessible names to icon-only controls and repaired the keyboard focus outline by replacing the undefined focus color variable.
+- Made the Manager responsive to its own window width with container queries and capped module windows to the current viewport.
+- Made Asset Doctor progress update in place while scanning instead of remaining frozen until completion.
+- Added confirmation before clearing the session log, a direct create-set action to the empty Director state, and human-readable action names in error notifications.
+- Close Actor/Token editors when their backing document is deleted, without prompting to save a document that no longer exists.
+- Removed misleading/dead UI and utility fragments and replaced the Russian-only schema fallback name with a neutral data-layer fallback.
+- Added regression coverage for dotted Foundry update deltas, external Manager state refresh, migration cleanup failure, async Region errors, manifestation cleanup, and icon-only accessibility.
+
 ## 1.0.9
 
 - Reworked runtime invalidation so ordinary Actor, User, Token, and Scene updates no longer fan out into unconditional scheduler, visibility, editor, and Manager work.

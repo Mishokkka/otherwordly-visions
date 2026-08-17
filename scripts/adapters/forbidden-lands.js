@@ -2,6 +2,23 @@ import { getProperty } from "../utils.js";
 
 const DAMAGE_ATTRIBUTES=["strength","agility","wits","empathy","health","resolve"];
 
+function changedValue(changes,path){
+  if(!changes||typeof changes!=="object")return undefined;
+  if(Object.hasOwn(changes,path))return changes[path];
+  const nested=getProperty(changes,path);
+  if(nested!==undefined)return nested;
+  for(const [key,value] of Object.entries(changes)){
+    if(!path.startsWith(`${key}.`))continue;
+    const descendant=getProperty(value,path.slice(key.length+1));
+    if(descendant!==undefined)return descendant;
+  }
+  return undefined;
+}
+function changedPath(changes,path){
+  if(changedValue(changes,path)!==undefined)return true;
+  return Object.keys(changes??{}).some(key=>key===path||key.startsWith(`${path}.`));
+}
+
 export class ForbiddenLandsAdapter {
   constructor(){this.attributeValues=new Map();}
   get active(){return game.system?.id==="forbidden-lands";}
@@ -21,7 +38,7 @@ export class ForbiddenLandsAdapter {
     if(previous){
       const damaged=[];
       for(const attribute of DAMAGE_ATTRIBUTES){
-        if(getProperty(changes,`system.attribute.${attribute}.value`)===undefined)continue;
+        if(changedValue(changes,`system.attribute.${attribute}.value`)===undefined)continue;
         const before=Number(previous[attribute]),after=Number(current[attribute]);
         if(Number.isFinite(before)&&Number.isFinite(after)&&after<before)damaged.push({attribute,previous:before,value:after,damage:before-after});
       }
@@ -29,7 +46,7 @@ export class ForbiddenLandsAdapter {
     }
     this.attributeValues.set(actor.id,current);
     const paths=["system.condition","system.conditions","system.attributes","system.attribute","system.stats","system.health","system.resource","system.resources"];
-    if(paths.some(path=>getProperty(changes,path)!==undefined))events.push({type:"fblCondition",event:"actor-condition",actorId:actor.id});
+    if(paths.some(path=>changedPath(changes,path)))events.push({type:"fblCondition",event:"actor-condition",actorId:actor.id});
     return events;
   }
   extractBanes(message,compact){for(const value of [getProperty(message,"flags.forbidden-lands.banes"),getProperty(message,"flags.forbiddenlands.banes"),getProperty(message,"flags.forbidden-lands.roll.banes"),getProperty(message,"rolls.0.options.banes")]){const number=Number(value);if(Number.isFinite(number))return number;}const match=compact.match(/banes?[^0-9]{0,8}(\d+)/);return match?Number(match[1]):null;}

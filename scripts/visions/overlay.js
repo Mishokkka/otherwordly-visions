@@ -64,7 +64,7 @@ export class VisionOverlay {
     const layer=this.ensureLayer();
     const frame=document.createElement("figure"); frame.className=`ov-flash-frame ov-transition-${payload.transition??"fade"}`;
     frame.style.setProperty("--ov-duration",`${duration}ms`); frame.style.setProperty("--ov-fade",`${fade}ms`); frame.style.setProperty("--ov-opacity",String(opacity)); frame.style.setProperty("--ov-scale",String(scale)); frame.style.setProperty("--ov-rotation",`${rotation}deg`); frame.style.setProperty("--ov-blur",`${blur}px`); frame.style.setProperty("--ov-edge",`${clampNumber(payload.edgeFadeSize,0,35,12)}%`); frame.dataset.blend=payload.blendMode??"screen"; frame.dataset.fit=fit; if(payload.edgeFade) frame.classList.add("has-edge-fade"); if(payload.vignette) frame.classList.add("has-vignette");
-    if(imageSrc){ const image=document.createElement("img"); image.className="ov-flash-image"; image.src=imageSrc; image.alt=""; image.decoding="async"; frame.appendChild(image); } else frame.classList.add("ov-audio-only");
+    if(imageSrc){ const image=document.createElement("img"); image.className="ov-flash-image"; image.src=imageSrc; image.alt=""; image.decoding="async"; frame.appendChild(image); }
     if(payload.caption){ const caption=document.createElement("figcaption"); caption.textContent=payload.caption; frame.appendChild(caption); }
     layer.appendChild(frame);
     try {

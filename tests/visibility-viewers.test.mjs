@@ -22,3 +22,21 @@ test("viewer token collection returns placeable Tokens and preserves viewer geom
   assert.equal(service.measureDistance(viewers[0],{center:{x:250,y:250}}),1);
   assert.equal(service.hasLineOfSight(viewers[0],{center:{x:250,y:250}}),true);
 });
+
+test("disabling tracked Otherworldly data immediately removes manifestation timing",async()=>{
+  globalThis.game={user:{id:"gm",isGM:true},actors:[],users:{get(){return null;}}};
+  globalThis.canvas={tokens:{controlled:[],placeables:[]},scene:{id:"s"}};
+  const { repository }=await import("../scripts/data/repository.js");
+  const originalEnabled=repository.isOtherworldlyEnabled.bind(repository),originalInvalidate=repository.invalidateOtherworldly.bind(repository);
+  repository.isOtherworldlyEnabled=()=>false;
+  repository.invalidateOtherworldly=()=>{};
+  try{
+    const { VisibilityService }=await import(`../scripts/visibility/visibility-service.js?disable-manifest=${Date.now()}`);
+    const service=new VisibilityService(),document={id:"t",uuid:"Scene.s.Token.t"};
+    service.trackedTokens.set(document.uuid,document.id);
+    let removed=null;
+    service.manifestations.remove=key=>{removed=key;};
+    service.noteTokenDataChanged(document);
+    assert.equal(removed,document.uuid);
+  }finally{repository.isOtherworldlyEnabled=originalEnabled;repository.invalidateOtherworldly=originalInvalidate;}
+});

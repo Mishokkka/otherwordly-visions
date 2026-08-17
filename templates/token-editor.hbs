@@ -49,7 +49,7 @@
         <select name="conditionOperator">{{#each operatorChoices}}<option value="{{value}}" {{#if selected}}selected{{/if}}>{{label}}</option>{{/each}}</select>
         <input name="conditionPath" value="{{path}}" placeholder="system.path">
         <input name="conditionValue" value="{{valueText}}" placeholder="id, value">
-        <button type="button" data-action="removeCondition" class="icon danger"><i class="fa-solid fa-trash"></i></button>
+        <button type="button" data-action="removeCondition" class="icon danger" title="{{localize "OV.Common.Delete"}}" aria-label="{{localize "OV.Common.Delete"}}"><i class="fa-solid fa-trash" aria-hidden="true"></i></button>
       </div>
       {{/each}}
     </div>

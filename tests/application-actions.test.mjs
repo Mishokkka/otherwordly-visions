@@ -84,3 +84,41 @@ test("manager keeps exactly one root drop listener across repeated renders",asyn
   assert.equal(adds,1);
   assert.equal(removes,0);
 });
+
+test("manager reloads a clean selected-set draft after an external persisted update",async()=>{
+  const { repository }=await import("../scripts/data/repository.js");
+  const originalGetState=repository.getState.bind(repository);
+  const persisted={uuid:"set-a",name:"Remote edit",slug:"remote",legacyIds:[],enabled:true,safety:[],images:[],audio:[],playlistIds:[],entries:[],sequence:[],triggers:[]};
+  repository.getState=()=>({revision:9,sets:{"set-a":persisted}});
+  try{
+    const Manager=makeManagerClass();
+    const app=Object.create(Manager.prototype);
+    app.selectedSetUuid="set-a";
+    app.original={...persisted,name:"Old"};
+    app.draft=structuredClone(app.original);
+    app.originalRevision=8;
+    app.ensureDraft();
+    assert.equal(app.draft.name,"Remote edit");
+    assert.equal(app.original.name,"Remote edit");
+    assert.equal(app.originalRevision,9);
+  }finally{repository.getState=originalGetState;}
+});
+
+test("manager preserves a dirty selected-set draft across an external persisted update",async()=>{
+  const { repository }=await import("../scripts/data/repository.js");
+  const originalGetState=repository.getState.bind(repository);
+  const persisted={uuid:"set-a",name:"Remote edit",slug:"remote",legacyIds:[],enabled:true,safety:[],images:[],audio:[],playlistIds:[],entries:[],sequence:[],triggers:[]};
+  repository.getState=()=>({revision:9,sets:{"set-a":persisted}});
+  try{
+    const Manager=makeManagerClass();
+    const app=Object.create(Manager.prototype);
+    app.selectedSetUuid="set-a";
+    app.original={...persisted,name:"Old"};
+    app.draft={...app.original,name:"Local dirty edit"};
+    app.originalRevision=8;
+    app.ensureDraft();
+    assert.equal(app.draft.name,"Local dirty edit");
+    assert.equal(app.original.name,"Old");
+    assert.equal(app.originalRevision,8);
+  }finally{repository.getState=originalGetState;}
+});
