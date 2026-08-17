@@ -101,13 +101,14 @@ export function normalizeVisionSet(data = {}) {
   set.entries = Array.isArray(set.entries) ? set.entries.map(normalizeEntry) : [];
   set.sequence = Array.isArray(set.sequence) ? set.sequence.map(normalizeSequenceStep) : [];
   set.triggers = Array.isArray(set.triggers) ? set.triggers.map(normalizeTrigger) : [];
-  for (const [key, min, max, fallback] of [["minDelay",1,86400,45],["maxDelay",1,86400,180],["chance",0,1,.35],["cooldown",0,86400,0],["maxPerSession",0,100000,0],["noRepeatWindow",0,1000,2],["minOpacity",.01,1,.18],["maxOpacity",.01,1,.65],["minDuration",25,60000,120],["maxDuration",25,60000,650],["audioChance",0,1,1],["minVolume",0,1,.45],["maxVolume",0,1,.75],["minScale",.25,3,1],["maxScale",.25,3,1.08],["minRotation",-180,180,-2],["maxRotation",-180,180,2],["maxBlur",0,24,.8],["edgeFadeSize",0,35,12]]) set[key]=clampNumber(set[key],min,max,fallback);
+  for (const [key, min, max, fallback] of [["minDelay",1,86400,45],["maxDelay",1,86400,180],["chance",0,1,.35],["cooldown",0,86400,0],["noRepeatWindow",0,1000,2],["minOpacity",.01,1,.18],["maxOpacity",.01,1,.65],["minDuration",25,60000,120],["maxDuration",25,60000,650],["audioChance",0,1,1],["minVolume",0,1,.45],["maxVolume",0,1,.75],["minScale",.25,3,1],["maxScale",.25,3,1.08],["minRotation",-180,180,-2],["maxRotation",-180,180,2],["maxBlur",0,24,.8],["edgeFadeSize",0,35,12]]) set[key]=clampNumber(set[key],min,max,fallback);
   for (const [minKey,maxKey] of [["minDelay","maxDelay"],["minOpacity","maxOpacity"],["minDuration","maxDuration"],["minVolume","maxVolume"],["minScale","maxScale"],["minRotation","maxRotation"]]) if (set[maxKey] < set[minKey]) set[maxKey]=set[minKey];
   set.blendMode = ["screen", "lighten", "normal", "overlay", "soft-light", "difference"].includes(String(set.blendMode)) ? String(set.blendMode) : "screen";
   set.fitMode = ["auto", "contain", "cover"].includes(String(set.fitMode)) ? String(set.fitMode) : "auto";
   set.edgeFade = Boolean(set.edgeFade);
   set.vignette = Boolean(set.vignette);
   delete set.id;
+  delete set.maxPerSession;
   return set;
 }
 

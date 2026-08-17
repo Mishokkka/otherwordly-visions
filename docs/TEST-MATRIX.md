@@ -41,3 +41,14 @@ Foundry VTT 13.351, Forbidden Lands 13.0.5, one GM and at least two player clien
 32. Tab through Manager and editor icon-only controls; every control must expose an accessible name and a visible focus outline.
 33. Run Asset Doctor on a set with many assets; its progress element must advance without full Manager rerenders.
 34. Resize the Manager narrower than 1050 px while the viewport remains wide; compact layout must follow the application width rather than the browser viewport.
+35. Delete the currently selected Vision Set from another GM/client while the local Manager draft is clean. The local Manager must clear/reselect persisted data and must never recreate the deleted set from a stale draft.
+36. Start Asset Doctor, switch Vision Sets before the scan finishes, and close/reopen the Manager during another scan. Stale results/progress must never appear on the new set or render after closure.
+37. Rapidly click or press Enter/Space on the Token HUD Otherworldly toggle while a flag write is pending. Only one toggle may execute at a time, and a failed write must surface a handled notification.
+38. Inspect the diagnostics session-log clear icon with keyboard/screen-reader navigation. Its accessible name must describe clearing the whole session log, not generic deletion.
+39. Run the static accessibility check against empty and whitespace-only `title`/`aria-label` values. They must be rejected.
+35. Schedule an automatic set for a player, switch the browser tab away and back several times before it is due, and verify the displayed `nextAt` never changes.
+36. Reload the player's Foundry page before an automatic cue is due and verify the restored scheduler uses the same absolute `nextAt`.
+37. Leave Foundry hidden past `nextAt` with hidden-tab playback disabled, return later, and verify exactly one overdue cue is armed after a 5–20 second grace period with no catch-up burst.
+38. Reload during the overdue grace period and verify the same persisted grace deadline is restored instead of starting a new grace period.
+39. Enable hidden-tab playback and leave the tab hidden past `nextAt`; the cue must execute on the first available browser timer wake-up without rerolling the interval.
+40. Change only `minDelay`/`maxDelay` on an eligible set and verify a new deadline is generated; change unrelated set fields and verify the existing deadline survives.

@@ -20,7 +20,7 @@ The visibility getter only makes the final visibility decision. Presentation is 
 
 ## Concurrency model
 
-A scheduler reconciliation increments a generation, cancels all old jobs, computes eligible UUIDs once and creates at most one timeout per set. Async cue execution never recreates an old-generation job. Director serializes playback, applies conflict policy and emits exactly one `afterCue` result for each accepted cue.
+A scheduler reconciliation increments a generation, cancels all in-memory timers, computes eligible UUIDs once and creates at most one timeout per set. The random schedule itself is stored as a client-scoped absolute `nextAt` deadline under a world-and-user context key, so ordinary reconciliation, tab visibility changes, and page reloads reuse the same deadline instead of rolling a new interval. If hidden-tab playback is disabled, an overdue deadline remains pending while hidden and receives one persisted 5–20 second grace deadline on return; missed periods never accumulate into a catch-up queue. Timing changes (`minDelay`/`maxDelay`) intentionally replace the saved deadline. Async cue execution never recreates an old-generation job. Director serializes playback, applies conflict policy and emits exactly one `afterCue` result for each accepted cue.
 
 ## Security model
 

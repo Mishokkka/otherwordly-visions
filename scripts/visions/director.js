@@ -28,13 +28,12 @@ class WeightedSelector {
 }
 
 export class VisionDirector {
-  constructor(){ this.queue=[]; this.current=null; this.processing=false; this.history=[]; this.selector=new WeightedSelector(); this.lastCueAt=0; this.setSessionCounts=new Map(); this.setCooldowns=new Map(); this.listeners=new Set(); }
+  constructor(){ this.queue=[]; this.current=null; this.processing=false; this.history=[]; this.selector=new WeightedSelector(); this.lastCueAt=0; this.setCooldowns=new Map(); this.listeners=new Set(); }
   onChange(callback){ this.listeners.add(callback); return()=>this.listeners.delete(callback); }
   emit(){ const snapshot=this.snapshot(); for(const callback of this.listeners){try{callback(snapshot);}catch(_error){}} }
   canRunSet(set,{forced=false}={}){
     if(!set?.enabled) return {ok:false,reason:"set-disabled"};
     if(!forced&&Math.random()>set.chance) return {ok:false,reason:"chance"};
-    const count=this.setSessionCounts.get(set.uuid)??0; if(!forced&&set.maxPerSession>0&&count>=set.maxPerSession) return {ok:false,reason:"session-limit"};
     if(!forced&&(this.setCooldowns.get(set.uuid)??0)>Date.now()) return {ok:false,reason:"set-cooldown"};
     const minimum=getSafetyProfile().minimumInterval*1000; if(!forced&&minimum>0&&Date.now()-this.lastCueAt<minimum) return {ok:false,reason:"minimum-interval"};
     return {ok:true};
@@ -84,7 +83,7 @@ export class VisionDirector {
         catch(error){ result=error?.name==="AbortError"?{status:"cancelled"}:{status:"error",reason:String(error?.message??error)}; if(result.status==="error") warn("Cue failed",error); }
         if(result.status==="shown"){
           this.lastCueAt=Date.now();
-          if(item.cue.setUuid){ const set=repository.getSet(item.cue.setUuid); this.setSessionCounts.set(item.cue.setUuid,(this.setSessionCounts.get(item.cue.setUuid)??0)+1); if(set?.cooldown>0) this.setCooldowns.set(item.cue.setUuid,Date.now()+set.cooldown*1000); }
+          if(item.cue.setUuid){ const set=repository.getSet(item.cue.setUuid); if(set?.cooldown>0) this.setCooldowns.set(item.cue.setUuid,Date.now()+set.cooldown*1000); }
         }
         this.history.unshift({at:new Date().toISOString(),cue:clone(item.cue),result:clone(result)}); this.history.length=Math.min(this.history.length,100);
         try{ Hooks.callAll(`${MODULE_ID}.afterCue`,clone(item.cue),clone(result)); }catch(_error){}
@@ -100,7 +99,7 @@ export class VisionDirector {
   }
   stopAll(reason="stopped"){ for(const item of this.queue.splice(0)) item.resolve({status:"cancelled",reason}); this.current?.controller?.abort(reason); void overlay.stopAudio(); this.emit(); }
   repeatLast(){ const row=this.history.find(item=>item.result?.status==="shown"); return row?this.enqueueCue({...clone(row.cue),id:randomId(18),createdAt:Date.now(),source:"repeat",priority:PRIORITY.MANUAL,conflict:CONFLICT.REPLACE_LOWER}):Promise.resolve({status:"skipped",reason:"no-history"}); }
-  resetSession(){ this.selector.reset(); this.setSessionCounts.clear(); this.setCooldowns.clear(); this.history=[]; this.lastCueAt=0; this.emit(); }
-  snapshot(){ return { current:this.current?{...clone(this.current.cue),startedAt:this.current.startedAt}:null, queue:this.queue.map(item=>clone(item.cue)), history:clone(this.history.slice(0,30)), lastCueAt:this.lastCueAt, sessionCounts:Object.fromEntries(this.setSessionCounts) }; }
+  resetSession(){ this.selector.reset(); this.setCooldowns.clear(); this.history=[]; this.lastCueAt=0; this.emit(); }
+  snapshot(){ return { current:this.current?{...clone(this.current.cue),startedAt:this.current.startedAt}:null, queue:this.queue.map(item=>clone(item.cue)), history:clone(this.history.slice(0,30)), lastCueAt:this.lastCueAt }; }
 }
 export const director=new VisionDirector();

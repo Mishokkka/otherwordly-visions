@@ -15,6 +15,7 @@ test("vision sets receive stable normalized fields and clamps",()=>{
   assert.equal(set.slug,"old-id");
   assert.deepEqual(set.images,["a.webp"]);
   assert.equal(set.maxDelay,set.minDelay);
+  assert.equal(Object.hasOwn(set,"maxPerSession"),false,"obsolete maxPerSession data is removed during normalization");
   assert.equal(set.maxOpacity,set.minOpacity);
   assert.equal(set.entries[0].weight,.01);
   assert.equal(set.triggers[0].chance,1);

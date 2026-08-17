@@ -1,5 +1,24 @@
 # Changelog
 
+## 1.0.12
+
+- Reworked automatic vision timing around persisted absolute `nextAt` deadlines instead of rerolling delays on every scheduler reconciliation.
+- Browser tab switches no longer postpone random visions: future deadlines resume unchanged, while overdue hidden-tab visions wait until the player returns and then use one persistent 5–20 second grace delay.
+- Page reloads restore the same client-local schedule, including an already-created overdue grace deadline, so F5 cannot continually push visions into the future.
+- Hidden-tab playback, when enabled by the player, keeps the same absolute deadline and executes overdue work on the first available browser wake-up.
+- Persisted schedules keep at most one pending occurrence per vision set; long absences never create a catch-up queue of multiple visions.
+- Changing a set's minimum/maximum automatic delay intentionally generates a new deadline; unrelated set edits preserve the existing deadline.
+- Removed the `maxPerSession` setting, runtime counter, schema field, Manager control, and localization because session boundaries are not meaningful for this client-side scheduler.
+- Added scheduler persistence/regression coverage for tab changes, reload reconstruction, overdue grace behavior, hidden playback, timing changes, and legacy `maxPerSession` cleanup.
+
+## 1.0.11
+
+- Fixed clean Manager drafts retaining externally deleted Vision Sets, preventing accidental recreation of deleted sets.
+- Guarded Asset Doctor scans against stale asynchronous results after set switches, edits, rescans, or Manager closure.
+- Serialized Token HUD visibility toggles and added error handling for failed flag writes.
+- Added a dedicated accessible label for clearing the full session log.
+- Tightened the accessibility static check so empty `title`/`aria-label` attributes no longer pass.
+
 ## 1.0.10
 
 - Completed the final audit pass for UX, accessibility, lifecycle cleanup, and Foundry-facing polish.

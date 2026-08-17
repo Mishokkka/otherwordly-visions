@@ -1,5 +1,5 @@
 export const MODULE_ID = "otherworldly-visions";
-export const MODULE_VERSION = "1.0.10";
+export const MODULE_VERSION = "1.0.12";
 export const SCHEMA_VERSION = 2;
 
 export const FLAGS = Object.freeze({
@@ -20,6 +20,7 @@ export const SETTINGS = Object.freeze({
   MACRO_UUID: "managerMacroUuid",
   DIRECT_FALLBACK: "directVisibilityFallback",
   PLAYER_FLASH: "playerFlashEnabled",
+  SCHEDULE_STATE: "scheduleState",
   VOLUME_CAP: "volumeCap",
   OPACITY_CAP: "opacityCap",
   REDUCED_MOTION: "reducedMotion",
@@ -118,7 +119,6 @@ export const DEFAULT_VISION_SET = Object.freeze({
   maxDelay: 180,
   chance: 0.35,
   cooldown: 0,
-  maxPerSession: 0,
   noRepeatWindow: 2,
   minOpacity: 0.18,
   maxOpacity: 0.65,

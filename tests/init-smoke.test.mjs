@@ -74,7 +74,7 @@ test("module registers settings and exposes its API during a Foundry-like init/r
   assert.ok(keybindings.has(`${MODULE_ID}.emergencyMute`));
 
   await once.get("ready")();
-  assert.equal(game.modules.get(MODULE_ID).api.version, "1.0.10");
+  assert.equal(game.modules.get(MODULE_ID).api.version, "1.0.12");
   assert.equal(game.otherworldlyVisions, game.modules.get(MODULE_ID).api);
   assert.equal(typeof game.otherworldlyVisions.openManager, "function");
 
