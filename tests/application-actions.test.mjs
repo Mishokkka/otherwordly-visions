@@ -142,12 +142,12 @@ test("manager clears a clean draft when its selected set is externally deleted",
   }finally{repository.getState=originalGetState;}
 });
 
-test("asset scan discards results after switching away from the scanned draft",async()=>{
+test("asset scan discards results and progress after switching away from the scanned draft",async()=>{
   const { mediaCache }=await import("../scripts/visions/media-cache.js");
   const originalScanSet=mediaCache.scanSet.bind(mediaCache);
-  let finish;
-  mediaCache.scanSet=async(_set,onProgress)=>{
-    onProgress({completed:1,total:2});
+  let finish,onProgress;
+  mediaCache.scanSet=async(_set,progress)=>{
+    onProgress=progress;
     return await new Promise(resolve=>{finish=resolve;});
   };
   try{
@@ -166,9 +166,41 @@ test("asset scan discards results after switching away from the scanned draft",a
     const pending=Manager.scanAssets.call(app);
     app.selectedSetUuid="set-b";
     app.draft={uuid:"set-b",name:"B"};
+    app.invalidateAssetScan({clearResults:true});
+    onProgress({completed:1,total:2});
+    assert.equal(app.scanProgress,null,"stale progress callbacks must not restore progress after a set switch");
     finish([{path:"old.png",ok:true}]);
     await pending;
     assert.deepEqual(app.scanResults,[]);
     assert.equal(app.scanProgress,null);
   }finally{mediaCache.scanSet=originalScanSet;}
+});
+
+test("clearing the media cache invalidates an active asset scan",async()=>{
+  const { mediaCache }=await import("../scripts/visions/media-cache.js");
+  const originalScanSet=mediaCache.scanSet.bind(mediaCache),originalClear=mediaCache.clear.bind(mediaCache);
+  let finish;let clears=0;
+  mediaCache.scanSet=async()=>await new Promise(resolve=>{finish=resolve;});
+  mediaCache.clear=()=>{clears+=1;};
+  try{
+    const Manager=makeManagerClass();
+    const app=Object.create(Manager.prototype);
+    app.selectedSetUuid="set-a";
+    app.draft={uuid:"set-a",name:"A"};
+    app.original=structuredClone(app.draft);
+    app.syncDraft=function(){return this.draft;};
+    app.rendered=true;
+    app.render=function(){this.renderCount=(this.renderCount??0)+1;};
+    app.element={querySelector(){return null;}};
+    app.scanResults=[];app.scanProgress=null;app._assetScanToken=null;
+    const pending=Manager.scanAssets.call(app);
+    Manager.clearMediaCache.call(app);
+    assert.equal(clears,1);
+    assert.equal(app._assetScanToken,null);
+    assert.equal(app.scanProgress,null);
+    assert.deepEqual(app.scanResults,[]);
+    finish([{path:"stale.png",ok:true}]);
+    await pending;
+    assert.deepEqual(app.scanResults,[],"a completed pre-clear scan must not repopulate cleared results");
+  }finally{mediaCache.scanSet=originalScanSet;mediaCache.clear=originalClear;}
 });

@@ -1,5 +1,13 @@
 # Changelog
 
+## 1.0.13
+
+- Hardened persisted scheduler state against in-process world/user context changes; cached schedules now reload by context and queued writes preserve their originating context.
+- Invalidating the media cache now also invalidates any active Asset Doctor scan, preventing stale scan results from reappearing after the clear action.
+- Split Token HUD persistence failures from HUD re-render failures so a successfully toggled flag is never reported as a failed toggle.
+- Strengthened regression coverage for scheduler context switching, stale Asset Doctor progress, cache-clear scan invalidation, and legacy `maxPerSession` cleanup.
+- Corrected duplicated acceptance-test numbering in the test matrix.
+
 ## 1.0.12
 
 - Reworked automatic vision timing around persisted absolute `nextAt` deadlines instead of rerolling delays on every scheduler reconciliation.

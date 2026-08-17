@@ -69,6 +69,44 @@ test("absolute nextAt survives reconciles, tab changes, and scheduler reconstruc
   }finally{Date.now=originalNow;}
 });
 
+test("persisted scheduler state reloads when the world or user context changes",async()=>{
+  installEnvironment();
+  const { VisionScheduler }=await import("../scripts/visions/scheduler.js");
+  await game.settings.set(MODULE_ID,SETTINGS.SCHEDULE_STATE,{
+    "world:p":{u:{nextAt:1_010_000,minDelay:10,maxDelay:10}},
+    "other:p":{u:{nextAt:2_010_000,minDelay:10,maxDelay:10}},
+    "other:q":{u:{nextAt:3_010_000,minDelay:10,maxDelay:10}}
+  });
+  const scheduler=new VisionScheduler();
+  scheduler.ensureScheduleStateLoaded();
+  assert.equal(scheduler.snapshot().persistentSchedules.u.nextAt,1_010_000);
+  assert.equal(scheduler.scheduleStateContextKey,"world:p");
+
+  game.world.id="other";scheduler.ensureScheduleStateLoaded();
+  assert.equal(scheduler.snapshot().persistentSchedules.u.nextAt,2_010_000,"changing worlds reloads the matching browser-local schedule");
+  assert.equal(scheduler.scheduleStateContextKey,"other:p");
+
+  game.user.id="q";scheduler.ensureScheduleStateLoaded();
+  assert.equal(scheduler.snapshot().persistentSchedules.u.nextAt,3_010_000,"changing users reloads the matching browser-local schedule");
+  assert.equal(scheduler.scheduleStateContextKey,"other:q");
+});
+
+test("queued scheduler persistence keeps each originating world/user context",async()=>{
+  installEnvironment();
+  const { VisionScheduler }=await import("../scripts/visions/scheduler.js");
+  const originalNow=Date.now;Date.now=()=>1_000_000;
+  try{
+    const scheduler=new VisionScheduler();
+    scheduler.ensureSchedule(baseSet({minDelay:10,maxDelay:10}));
+    game.world.id="other";scheduler.ensureScheduleStateLoaded();
+    scheduler.ensureSchedule(baseSet({minDelay:20,maxDelay:20}));
+    await scheduler.flushPersistence();
+    const stored=game.settings.get(MODULE_ID,SETTINGS.SCHEDULE_STATE);
+    assert.equal(stored["world:p"].u.nextAt,1_010_000);
+    assert.equal(stored["other:p"].u.nextAt,1_020_000);
+  }finally{Date.now=originalNow;}
+});
+
 test("overdue hidden schedule waits for return, creates one persistent grace deadline, and does not reroll it",async()=>{
   const env=installEnvironment({set:baseSet({minDelay:10,maxDelay:10}),scheduleState:{u:{nextAt:900_000,minDelay:10,maxDelay:10}}});
   const { mediaCache }=await import("../scripts/visions/media-cache.js");

@@ -9,7 +9,7 @@ test("legacy actor imageSets migrate without being shadowed by defaults",()=>{
 });
 
 test("vision sets receive stable normalized fields and clamps",()=>{
-  const set=normalizeVisionSet({id:"Old ID",name:"Night Terrors",images:["a.webp","bad.txt","a.webp"],audio:["x.ogg"],minDelay:40,maxDelay:2,minOpacity:2,maxOpacity:-1,entries:[{image:"a.webp",weight:0}],triggers:[{type:"sceneReady",chance:4}]});
+  const set=normalizeVisionSet({id:"Old ID",maxPerSession:3,name:"Night Terrors",images:["a.webp","bad.txt","a.webp"],audio:["x.ogg"],minDelay:40,maxDelay:2,minOpacity:2,maxOpacity:-1,entries:[{image:"a.webp",weight:0}],triggers:[{type:"sceneReady",chance:4}]});
   assert.ok(set.uuid.length>=8);
   assert.ok(set.legacyIds.includes("Old ID"));
   assert.equal(set.slug,"old-id");

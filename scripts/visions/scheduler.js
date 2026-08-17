@@ -27,7 +27,9 @@ export class VisionScheduler {
     this.listeners=new Set();
     this.scheduleState={};
     this.scheduleStateLoaded=false;
+    this.scheduleStateContextKey=null;
     this.persistQueued=false;
+    this.persistSnapshots=new Map();
     this.persistPromise=Promise.resolve();
   }
   onChange(callback){this.listeners.add(callback);return()=>this.listeners.delete(callback);}
@@ -35,18 +37,23 @@ export class VisionScheduler {
   hiddenBlocked(){return Boolean(document.hidden)&&!Boolean(game.settings.get(MODULE_ID,SETTINGS.ALLOW_HIDDEN));}
   requestReconcile(delay=75){clearTimeout(this.reconcileTimer);this.reconcileTimer=window.setTimeout(()=>{this.reconcileTimer=null;this.reconcile();},Math.max(0,delay));}
   ensureScheduleStateLoaded(){
-    if(this.scheduleStateLoaded)return;
-    const stored=game.settings.get(MODULE_ID,SETTINGS.SCHEDULE_STATE)??{},raw=stored?.[scheduleContextKey()]??{},clean={};
+    const contextKey=scheduleContextKey();
+    if(this.scheduleStateLoaded&&this.scheduleStateContextKey===contextKey)return;
+    const stored=game.settings.get(MODULE_ID,SETTINGS.SCHEDULE_STATE)??{},raw=stored?.[contextKey]??{},clean={};
     for(const [uuid,value] of Object.entries(raw)){const entry=cleanScheduleEntry(value);if(entry)clean[uuid]=entry;}
-    this.scheduleState=clean;this.scheduleStateLoaded=true;
+    this.scheduleState=clean;this.scheduleStateLoaded=true;this.scheduleStateContextKey=contextKey;
   }
   queuePersist(){
+    const contextKey=this.scheduleStateContextKey??scheduleContextKey();
+    this.persistSnapshots.set(contextKey,JSON.parse(JSON.stringify(this.scheduleState)));
     if(this.persistQueued)return;
     this.persistQueued=true;
     const enqueue=()=>{
       this.persistQueued=false;
-      const snapshot=JSON.parse(JSON.stringify(this.scheduleState)),contextKey=scheduleContextKey();
-      this.persistPromise=this.persistPromise.then(()=>{const current=game.settings.get(MODULE_ID,SETTINGS.SCHEDULE_STATE)??{},stored=current&&typeof current==="object"&&!Array.isArray(current)?{...current}:{};if(Object.keys(snapshot).length)stored[contextKey]=snapshot;else delete stored[contextKey];return game.settings.set(MODULE_ID,SETTINGS.SCHEDULE_STATE,stored);}).catch(error=>warn("Scheduler state persistence failed",error));
+      const snapshots=[...this.persistSnapshots.entries()];this.persistSnapshots.clear();
+      this.persistPromise=this.persistPromise.then(async()=>{
+        for(const [key,snapshot] of snapshots){const current=game.settings.get(MODULE_ID,SETTINGS.SCHEDULE_STATE)??{},stored=current&&typeof current==="object"&&!Array.isArray(current)?{...current}:{};if(Object.keys(snapshot).length)stored[key]=snapshot;else delete stored[key];await game.settings.set(MODULE_ID,SETTINGS.SCHEDULE_STATE,stored);}
+      }).catch(error=>warn("Scheduler state persistence failed",error));
     };
     if(typeof queueMicrotask==="function")queueMicrotask(enqueue);else Promise.resolve().then(enqueue);
   }
