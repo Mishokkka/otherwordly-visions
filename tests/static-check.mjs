@@ -12,7 +12,7 @@ const manifest=JSON.parse(readFileSync(join(root,"module.json"),"utf8"));
 const packageJson=JSON.parse(readFileSync(join(root,"package.json"),"utf8"));
 const constantsSource=readFileSync(join(root,"scripts/constants.js"),"utf8");
 assert.equal(manifest.id,"otherworldly-visions");
-assert.equal(manifest.version,"1.0.10");
+assert.equal(manifest.version,"1.0.12");
 assert.equal(packageJson.version,manifest.version,"package.json version must match module.json");
 assert.equal(constantsSource.match(/MODULE_VERSION\s*=\s*["']([^"']+)["']/)?.[1],manifest.version,"API version must match module.json");
 for(const path of [...manifest.esmodules,...manifest.styles,...manifest.languages.map(row=>row.path)])assert.ok(statSync(join(root,path)).isFile(),`Missing manifest path: ${path}`);
@@ -46,12 +46,16 @@ function countTopLevelElements(source){
   assert.equal(stack.length,0,"Unclosed HTML element in template");
   return roots;
 }
+function hasAccessibleName(attrs){return /\b(?:aria-label|title)\s*=\s*(?:"[^"\n]*\S[^"\n]*"|'[^'\n]*\S[^'\n]*')/i.test(attrs);}
+assert.equal(hasAccessibleName(' aria-label=""'),false,"Empty aria-label must not count as an accessible name");
+assert.equal(hasAccessibleName(' title = "   "'),false,"Whitespace-only title must not count as an accessible name");
+assert.equal(hasAccessibleName(' aria-label = "Named"'),true,"Non-empty aria-label must count as an accessible name");
 for(const path of templates){
   const source=readFileSync(path,"utf8");
   assert.equal(countTopLevelElements(source),1,`ApplicationV2 template part must render exactly one root element: ${relative(root,path)}`);
   for(const match of source.matchAll(/<button\b([^>]*)>([\s\S]*?)<\/button>/g)){
     const attrs=match[1],body=match[2],plain=body.replace(/<[^>]+>/g,"").trim();
-    if(!plain&&/<i\b/i.test(body))assert.ok(/\b(?:aria-label|title)=/i.test(attrs),`Icon-only button needs an accessible name in ${relative(root,path)}`);
+    if(!plain&&/<i\b/i.test(body))assert.ok(hasAccessibleName(attrs),`Icon-only button needs a non-empty accessible name in ${relative(root,path)}`);
   }
 }
 

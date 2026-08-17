@@ -122,3 +122,53 @@ test("manager preserves a dirty selected-set draft across an external persisted 
     assert.equal(app.originalRevision,8);
   }finally{repository.getState=originalGetState;}
 });
+
+test("manager clears a clean draft when its selected set is externally deleted",async()=>{
+  const { repository }=await import("../scripts/data/repository.js");
+  const originalGetState=repository.getState.bind(repository);
+  repository.getState=()=>({revision:12,sets:{}});
+  try{
+    const Manager=makeManagerClass();
+    const app=Object.create(Manager.prototype);
+    app.selectedSetUuid="set-a";
+    app.original={uuid:"set-a",name:"Saved"};
+    app.draft=structuredClone(app.original);
+    app.originalRevision=11;
+    app.ensureDraft();
+    assert.equal(app.selectedSetUuid,null);
+    assert.equal(app.draft,null);
+    assert.equal(app.original,null);
+    assert.equal(app.originalRevision,12);
+  }finally{repository.getState=originalGetState;}
+});
+
+test("asset scan discards results after switching away from the scanned draft",async()=>{
+  const { mediaCache }=await import("../scripts/visions/media-cache.js");
+  const originalScanSet=mediaCache.scanSet.bind(mediaCache);
+  let finish;
+  mediaCache.scanSet=async(_set,onProgress)=>{
+    onProgress({completed:1,total:2});
+    return await new Promise(resolve=>{finish=resolve;});
+  };
+  try{
+    const Manager=makeManagerClass();
+    const app=Object.create(Manager.prototype);
+    app.selectedSetUuid="set-a";
+    app.draft={uuid:"set-a",name:"A"};
+    app.original=structuredClone(app.draft);
+    app.syncDraft=function(){return this.draft;};
+    app.rendered=true;
+    app.render=function(){this.renderCount=(this.renderCount??0)+1;};
+    app.element={querySelector(){return null;}};
+    app.scanResults=[];
+    app.scanProgress=null;
+    app._assetScanToken=null;
+    const pending=Manager.scanAssets.call(app);
+    app.selectedSetUuid="set-b";
+    app.draft={uuid:"set-b",name:"B"};
+    finish([{path:"old.png",ok:true}]);
+    await pending;
+    assert.deepEqual(app.scanResults,[]);
+    assert.equal(app.scanProgress,null);
+  }finally{mediaCache.scanSet=originalScanSet;}
+});

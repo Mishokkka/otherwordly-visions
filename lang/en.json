@@ -115,7 +115,8 @@
       "Processed": "Processed commands",
       "Repair": "Repair orphan references",
       "RestoreBackup": "Restore migration backup",
-      "SessionLog": "GM command log"
+      "SessionLog": "GM command log",
+      "ClearSessionLog": "Clear session log"
     },
     "Director": {
       "Conflict": "Conflict policy",
@@ -249,7 +250,6 @@
       "Fit": "Fit mode",
       "Identity": "Identity",
       "MaxDelay": "Maximum delay, s",
-      "MaxSession": "Maximum per session, 0 = unlimited",
       "MinDelay": "Minimum delay, s",
       "New": "New vision set",
       "NoEntries": "No weighted entries. Legacy image pool will be used.",
