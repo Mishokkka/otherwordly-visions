@@ -12,7 +12,7 @@ const manifest=JSON.parse(readFileSync(join(root,"module.json"),"utf8"));
 const packageJson=JSON.parse(readFileSync(join(root,"package.json"),"utf8"));
 const constantsSource=readFileSync(join(root,"scripts/constants.js"),"utf8");
 assert.equal(manifest.id,"otherworldly-visions");
-assert.equal(manifest.version,"1.0.9");
+assert.equal(manifest.version,"1.0.10");
 assert.equal(packageJson.version,manifest.version,"package.json version must match module.json");
 assert.equal(constantsSource.match(/MODULE_VERSION\s*=\s*["']([^"']+)["']/)?.[1],manifest.version,"API version must match module.json");
 for(const path of [...manifest.esmodules,...manifest.styles,...manifest.languages.map(row=>row.path)])assert.ok(statSync(join(root,path)).isFile(),`Missing manifest path: ${path}`);
@@ -49,6 +49,10 @@ function countTopLevelElements(source){
 for(const path of templates){
   const source=readFileSync(path,"utf8");
   assert.equal(countTopLevelElements(source),1,`ApplicationV2 template part must render exactly one root element: ${relative(root,path)}`);
+  for(const match of source.matchAll(/<button\b([^>]*)>([\s\S]*?)<\/button>/g)){
+    const attrs=match[1],body=match[2],plain=body.replace(/<[^>]+>/g,"").trim();
+    if(!plain&&/<i\b/i.test(body))assert.ok(/\b(?:aria-label|title)=/i.test(attrs),`Icon-only button needs an accessible name in ${relative(root,path)}`);
+  }
 }
 
 const actorTemplate=readFileSync(join(root,"templates/actor-editor.hbs"),"utf8");
@@ -58,6 +62,7 @@ assert.match(actorTemplate,/ov-kpi-grid ov-actor-kpis/,"Touched actor editor mus
 assert.match(scriptText,/applyWindowChrome\(this\)/,"ApplicationV2 windows must apply module chrome");
 
 const css=walk(join(root,"styles")).filter(path=>path.endsWith(".css"));
+assert.doesNotMatch(css.map(path=>readFileSync(path,"utf8")).join("\n"),/--ov-accent-2\b/,"Undefined legacy focus color variable must not return");
 for(const path of css){const source=readFileSync(path,"utf8").replace(/\/\*[\s\S]*?\*\//g,"");for(const chunk of source.split("}")){const selector=chunk.split("{")[0]?.trim();if(!selector||selector.startsWith("@")||selector.includes("from")||selector.includes("to")||/^\d+%/.test(selector))continue;for(const part of selector.split(",").map(value=>value.trim()))assert.ok(part.startsWith(".otherworldly-visions")||part.startsWith(".application.otherworldly-visions")||part.startsWith("#ov-flash-layer")||part.startsWith(".control-icon.ov-")||part.startsWith("#combat-tracker")||part.startsWith(".combat-tracker"),`Unscoped CSS selector in ${relative(root,path)}: ${part}`);}}
 
 assert.doesNotMatch(scriptText,/game\.socket\.(emit|on)/,"Raw module socket transport must not be used");

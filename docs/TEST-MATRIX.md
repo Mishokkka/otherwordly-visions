@@ -32,3 +32,12 @@ Foundry VTT 13.351, Forbidden Lands 13.0.5, one GM and at least two player clien
 24. Move a player token through proximity targets with and without `tokenApproach` triggers. With no relevant trigger there must be no proximity work; with triggers, eligible sets are resolved once per movement and only indexed Otherworldly targets are measured.
 25. Change a Stage-3 token to another revelation stage or alter its intermittent timing. Old manifestation timers must be removed/replaced and must not continue refreshing the token.
 26. Reconcile a player scheduler with many eligible sets. Prewarm should be limited to the nearest upcoming jobs, and repeated requests for one media path must share one in-flight load.
+
+27. Apply an FL Actor update using a flattened dotted key such as `system.attribute.strength.value`; `fblDamage` and condition detection must match the nested-object form.
+28. With a clean Manager draft open, change the same set from another GM/client; the Manager must reload the persisted set. With a dirty local draft, it must preserve the local draft and surface the normal revision conflict on save.
+29. Force legacy cleanup to fail during migration; `migrationComplete` must remain false so the migration can retry safely.
+30. Force a Region trigger dispatch promise to reject; the bridge must log a warning without producing an unhandled rejection.
+31. Disable a stage-3 Otherworldly token; its manifestation timer/state must be removed immediately.
+32. Tab through Manager and editor icon-only controls; every control must expose an accessible name and a visible focus outline.
+33. Run Asset Doctor on a set with many assets; its progress element must advance without full Manager rerenders.
+34. Resize the Manager narrower than 1050 px while the viewport remains wide; compact layout must follow the application width rather than the browser viewport.

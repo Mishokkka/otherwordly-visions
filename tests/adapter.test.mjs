@@ -29,3 +29,18 @@ test("Forbidden Lands adapter emits fblDamage when a tracked attribute is reduce
   assert.equal(damage.damage,2);
   assert.ok(events.some(event=>event.type==="fblCondition"));
 });
+
+test("Forbidden Lands adapter accepts flattened dotted update paths",async()=>{
+  globalThis.game={system:{id:"forbidden-lands",version:"13.0.5"},actors:[]};
+  const { ForbiddenLandsAdapter }=await import(`../scripts/adapters/forbidden-lands.js?dotted=${Date.now()}`);
+  const actor={id:"flat",system:{attribute:{strength:{value:5},agility:{value:3},wits:{value:2},empathy:{value:4}}}};
+  const adapter=new ForbiddenLandsAdapter();
+  adapter.primeActor(actor);
+  actor.system.attribute.strength.value=3;
+  const events=adapter.analyzeActorUpdate(actor,{"system.attribute.strength.value":3});
+  const damage=events.find(event=>event.type==="fblDamage");
+  assert.ok(damage);
+  assert.equal(damage.attribute,"strength");
+  assert.equal(damage.damage,2);
+  assert.ok(events.some(event=>event.type==="fblCondition"));
+});

@@ -35,3 +35,23 @@ test("direct RegionDocument fallback dispatches after the core event and restore
   service.destroy();
   assert.equal(RegionDocument.prototype._handleEvent,original);
 });
+
+test("RegionDocument bridge catches asynchronous dispatch failures",async()=>{
+  const warnings=[];
+  const originalWarn=console.warn;
+  console.warn=(...args)=>warnings.push(args);
+  class RegionDocument{async _handleEvent(){return "ok";}}
+  globalThis.foundry={documents:{RegionDocument}};
+  globalThis.game={system:{id:"forbidden-lands",version:"13.0.5"},user:{id:"p",isGM:false},actors:[],modules:{get(){return null;}},settings:{get(){return true;}}};
+  globalThis.canvas={scene:{id:"s"}};
+  try{
+    const { TriggerService }=await import(`../scripts/triggers/trigger-service.js?async-region=${Date.now()}`);
+    const service=new TriggerService();
+    service.handleRegionEvent=async()=>{throw new Error("dispatch failed");};
+    assert.equal(service.patchRegionEvents(),"direct-fallback");
+    await new RegionDocument()._handleEvent({name:"tokenEnter",region:{id:"r"},data:{token:{id:"t"}}});
+    await new Promise(resolve=>setTimeout(resolve,0));
+    assert.ok(warnings.some(args=>args.some(value=>String(value).includes("Region trigger dispatch failed"))));
+    service.destroy();
+  }finally{console.warn=originalWarn;}
+});

@@ -25,6 +25,11 @@
   color-scheme: dark;
 }
 
+.application.otherworldly-visions {
+  max-width: calc(100vw - 24px);
+  max-height: calc(100vh - 24px);
+}
+
 .application.otherworldly-visions .window-content,
 .otherworldly-visions .window-content {
   padding: 0 !important;

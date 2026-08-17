@@ -24,7 +24,6 @@
 .otherworldly-visions .form-group > label { flex: 0 0 180px; color: var(--ov-muted); }
 .otherworldly-visions .form-group > input,
 .otherworldly-visions .form-group > select { flex: 1; }
-.otherworldly-visions .ov-check-card { padding: 7px; border: 1px solid var(--ov-border); border-radius: 7px; background: var(--ov-bg-soft); }
 .otherworldly-visions .ov-condition-row { grid-template-columns: auto 125px 125px minmax(100px,1fr) minmax(110px,1fr) auto; }
 .otherworldly-visions .form-footer { display: flex; justify-content: flex-end; gap: 7px; padding: 10px 14px; border-top: 1px solid var(--ov-border); background: #171d28; }
 .otherworldly-visions .ov-safety-header > i { font-size: 2.2rem; color: var(--ov-accent); }

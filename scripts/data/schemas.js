@@ -91,7 +91,7 @@ export function normalizeVisionSet(data = {}) {
   const oldId = String(data?.id ?? "");
   set.uuid = String(set.uuid || randomId(16));
   set.legacyIds = unique([...(set.legacyIds ?? []), oldId].filter(Boolean));
-  set.name = String(set.name || "Новый набор").slice(0, 160);
+  set.name = String(set.name || "Vision Set").slice(0, 160);
   set.slug = slugify(set.slug || oldId || set.name, `set-${set.uuid.slice(0, 6)}`);
   set.enabled = set.enabled !== false;
   set.safety = unique(set.safety);

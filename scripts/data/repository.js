@@ -278,8 +278,8 @@ export class WorldRepository {
       if (updates.length) { await scene.updateEmbeddedDocuments("Token", updates); tokenCount += updates.length; }
     }
 
-    await game.settings.set(MODULE_ID, SETTINGS.MIGRATION_COMPLETE, true);
     if (legacyHasSets) await game.settings.set(MODULE_ID, SETTINGS.LEGACY_VISION_SETS, {});
+    await game.settings.set(MODULE_ID, SETTINGS.MIGRATION_COMPLETE, true);
     return { migrated: true, sets: Object.keys(state.sets).length, actors: actorCount, tokens: tokenCount };
   }
 }
